@@ -16,7 +16,7 @@ from shared.infrastructure.aws.secrets import get_secret
 
 _TEXT_MODEL = os.environ.get("BEDROCK_TEXT_MODEL", "amazon.titan-embed-text-v2:0")
 _GROQ_SECRET_NAME = os.environ.get("GROQ_SECRET_NAME", "tracefind/groq-api-key")
-_GROQ_MODEL = "llama-3.2-90b-vision-preview"
+_GROQ_MODEL = "meta-llama/llama-4-scout-17b-16e-instruct"
 
 
 class BedrockEmbeddingClient(EmbeddingGenerator):
@@ -74,7 +74,8 @@ class BedrockEmbeddingClient(EmbeddingGenerator):
             data=json.dumps(payload).encode("utf-8"),
             headers={
                 "Authorization": f"Bearer {api_key}",
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
+                "User-Agent": "TraceFind-Backend/1.0 (Python/urllib)"
             },
             method="POST"
         )
