@@ -18,6 +18,7 @@ from aws_cdk import (
     aws_logs as logs,
     aws_sns as sns,
     aws_sns_subscriptions as sns_subs,
+    aws_secretsmanager as sm,
 )
 from constructs import Construct
 
@@ -52,10 +53,11 @@ class ApiStack(Stack):
             "NOTIFICATIONS_TABLE": notifications_table.table_name,
             "AUDIT_TABLE": audit_table.table_name,
             "MATCH_THRESHOLD": "0.75",
-            "EMBEDDING_MODEL_VERSION": "titan-mm-v1+titan-text-v2",
+            "EMBEDDING_MODEL_VERSION": "groq-vision+titan-text-v2",
             "COGNITO_USER_POOL_ID": user_pool.user_pool_id,
             "ENV": env_name,
             "PYTHONPATH": "/var/task",
+            "GROQ_SECRET_NAME": "tracefind/groq-api-key",
         }
 
         def fn(name: str, handler: str, *, memory: int = 256, timeout: int = 5) -> lambda_.Function:
@@ -202,6 +204,10 @@ class ApiStack(Stack):
                     ],
                 )
             )
+
+        groq_secret = sm.Secret.from_secret_name_v2(self, "GroqSecret", "tracefind/groq-api-key")
+        groq_secret.grant_read(create_item)
+        groq_secret.grant_read(admin_reembed)
 
         if env_name == "prod":
             create_item_alias = lambda_.Alias(
