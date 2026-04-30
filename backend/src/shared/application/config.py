@@ -33,7 +33,7 @@ def audit_table() -> str:
 
 
 def match_threshold() -> float:
-    return float(env("MATCH_THRESHOLD", "0.75"))
+    return float(env("MATCH_THRESHOLD", "0.70"))
 
 
 def embedding_model_version() -> str:

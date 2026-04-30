@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { Authenticator } from "@aws-amplify/ui-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -21,9 +22,23 @@ const navItems = [
   { href: "/dashboard/notifications", label: "Notifications", icon: Bell },
   { href: "/dashboard/admin", label: "Admin", icon: ShieldAlert },
 ];
-
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    const fetchUnread = async () => {
+      try {
+        const { notifications } = await import("@/contexts/notification/api/notifications").then(m => m.listNotifications());
+        setUnreadCount(notifications.filter(n => !n.read).length);
+      } catch (e) {
+        console.error("Failed to fetch notifications", e);
+      }
+    };
+    fetchUnread();
+    const interval = setInterval(fetchUnread, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <Authenticator>
@@ -48,6 +63,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   item.href === "/dashboard"
                     ? pathname === "/dashboard"
                     : pathname.startsWith(item.href);
+                const isNotifications = item.href === "/dashboard/notifications";
+                
                 return (
                   <Link
                     key={item.href}
@@ -59,8 +76,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                         : "text-muted-foreground hover:bg-accent hover:text-foreground"
                     )}
                   >
-                    <item.icon className="h-4 w-4" />
-                    {item.label}
+                    <div className="relative flex items-center gap-3 flex-1">
+                      <item.icon className="h-4 w-4" />
+                      {item.label}
+                      {isNotifications && unreadCount > 0 && (
+                        <span className="absolute right-0 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
+                          {unreadCount > 9 ? "9+" : unreadCount}
+                        </span>
+                      )}
+                    </div>
                   </Link>
                 );
               })}

@@ -54,7 +54,30 @@ export default function NotificationsPage() {
                         {!n.read && <span className="h-2 w-2 rounded-full bg-primary" />}
                       </div>
                       <p className="mt-1 text-xs text-muted-foreground">{new Date(n.created_at).toLocaleString()}</p>
-                      {n.payload && Object.keys(n.payload).length > 0 && (
+                      
+                      {n.type === "match_found" && n.payload && (
+                        <div className="mt-4 rounded-md border bg-muted/30 p-4">
+                          <h4 className="text-sm font-semibold mb-2">Match Details</h4>
+                          <div className="space-y-2 text-sm">
+                            <div className="flex items-start gap-2">
+                              <span className="font-medium text-muted-foreground w-20">Email:</span>
+                              <span className="text-foreground">{(n.payload?.other_party_email as string) ?? "N/A"}</span>
+                            </div>
+                            <div className="flex items-start gap-2">
+                              <span className="font-medium text-muted-foreground w-20">Description:</span>
+                              <span className="text-foreground italic">"{(n.payload?.other_item_description as string) ?? "No description"}"</span>
+                            </div>
+                            <div className="flex items-start gap-2">
+                              <span className="font-medium text-muted-foreground w-20">Score:</span>
+                              <Badge variant="secondary" className="h-5 text-[10px]">
+                                {n.payload?.score ? ((n.payload.score as number) * 100).toFixed(1) : "0.0"}% match
+                              </Badge>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {n.type !== "match_found" && n.payload && Object.keys(n.payload).length > 0 && (
                         <pre className="mt-3 overflow-auto rounded-md bg-muted/50 p-3 text-xs text-muted-foreground">{JSON.stringify(n.payload, null, 2)}</pre>
                       )}
                     </div>

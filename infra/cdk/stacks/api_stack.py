@@ -52,7 +52,7 @@ class ApiStack(Stack):
             "CLAIMS_TABLE": claims_table.table_name,
             "NOTIFICATIONS_TABLE": notifications_table.table_name,
             "AUDIT_TABLE": audit_table.table_name,
-            "MATCH_THRESHOLD": "0.75",
+            "MATCH_THRESHOLD": "0.70",
             "EMBEDDING_MODEL_VERSION": "groq-vision+titan-text-v2",
             "COGNITO_USER_POOL_ID": user_pool.user_pool_id,
             "ENV": env_name,

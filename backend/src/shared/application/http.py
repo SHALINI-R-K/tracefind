@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from decimal import Decimal
 from typing import Any, Callable
 
 from shared.domain.exceptions.domain_exception import (
@@ -25,6 +26,13 @@ _STATUS_FOR = {
 }
 
 
+class DecimalEncoder(json.JSONEncoder):
+    def default(self, obj: Any) -> Any:
+        if isinstance(obj, Decimal):
+            return float(obj)
+        return super().default(obj)
+
+
 def response(status: int, body: dict[str, Any] | list[Any]) -> dict[str, Any]:
     return {
         "statusCode": status,
@@ -32,7 +40,7 @@ def response(status: int, body: dict[str, Any] | list[Any]) -> dict[str, Any]:
             "Content-Type": "application/json",
             "Access-Control-Allow-Origin": "*",
         },
-        "body": json.dumps(body),
+        "body": json.dumps(body, cls=DecimalEncoder),
     }
 
 
