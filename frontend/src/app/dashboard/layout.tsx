@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Authenticator } from "@aws-amplify/ui-react";
+import { fetchAuthSession } from "aws-amplify/auth";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -18,16 +19,41 @@ import { Button } from "@/shared/components/ui/button";
 import { cn } from "@/shared/lib/utils";
 import { listNotifications } from "@/contexts/notification/api/notifications";
 
-const navItems = [
+type NavItem = {
+  href: string;
+  label: string;
+  icon: typeof LayoutDashboard;
+  adminOnly?: boolean;
+};
+
+const navItems: NavItem[] = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/dashboard/report", label: "Report Item", icon: FileText },
   { href: "/dashboard/notifications", label: "Notifications", icon: Bell },
-  { href: "/dashboard/admin", label: "Admin", icon: ShieldAlert },
+  { href: "/dashboard/admin", label: "Admin", icon: ShieldAlert, adminOnly: true },
 ];
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [unreadCount, setUnreadCount] = useState(0);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    // Read cognito:groups from the id token to decide whether to show Admin
+    const checkAdmin = async () => {
+      try {
+        const session = await fetchAuthSession();
+        const groups = session.tokens?.idToken?.payload?.["cognito:groups"];
+        const isMember =
+          (Array.isArray(groups) && groups.includes("admin")) ||
+          (typeof groups === "string" && groups.split(/[\s,]+/).includes("admin"));
+        setIsAdmin(Boolean(isMember));
+      } catch {
+        setIsAdmin(false);
+      }
+    };
+    checkAdmin();
+  }, []);
 
   useEffect(() => {
     const fetchUnread = async () => {
@@ -42,6 +68,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     const interval = setInterval(fetchUnread, 30000);
     return () => clearInterval(interval);
   }, []);
+
+  const visibleNavItems = navItems.filter((item) => !item.adminOnly || isAdmin);
 
   return (
     <Authenticator components={{ Header: AuthHeader, Footer: AuthFooter }}>
@@ -63,7 +91,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
         <nav className="flex-1 overflow-y-auto px-3 py-4">
           <ul className="space-y-1">
-            {navItems.map((item) => {
+            {visibleNavItems.map((item) => {
               const isActive =
                 item.href === "/dashboard"
                   ? pathname === "/dashboard"
