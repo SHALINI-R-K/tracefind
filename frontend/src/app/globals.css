@@ -4,26 +4,51 @@
 
 @layer base {
   :root {
-    --background: 222 47% 6%;
-    --foreground: 210 40% 96%;
-    --card: 222 47% 8%;
-    --card-foreground: 210 40% 96%;
-    --popover: 222 47% 8%;
-    --popover-foreground: 210 40% 96%;
-    --primary: 217 91% 60%;
-    --primary-foreground: 222 47% 6%;
-    --secondary: 217 33% 17%;
-    --secondary-foreground: 210 40% 96%;
-    --muted: 217 33% 14%;
-    --muted-foreground: 215 20% 55%;
-    --accent: 217 33% 17%;
-    --accent-foreground: 210 40% 96%;
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217 33% 17%;
-    --input: 217 33% 17%;
-    --ring: 217 91% 60%;
-    --radius: 0.75rem;
+    /* PALETTE — Treasure
+       Warm amber-gold on a faint-cool charcoal. Treasure-find thematic,
+       distinctive vs SaaS cyan, premium without being cold. */
+    --background: 220 14% 5%;
+    --foreground: 36 25% 94%;
+    --card: 220 12% 8%;
+    --card-foreground: 36 25% 94%;
+    --popover: 220 12% 8%;
+    --popover-foreground: 36 25% 94%;
+
+    /* Primary — saturated amber-gold */
+    --primary: 38 95% 58%;
+    --primary-foreground: 220 18% 4%;
+
+    /* Secondary surfaces */
+    --secondary: 220 12% 12%;
+    --secondary-foreground: 36 25% 94%;
+    --muted: 220 12% 10%;
+    --muted-foreground: 30 8% 62%;
+    --accent: 220 12% 13%;
+    --accent-foreground: 36 25% 94%;
+
+    /* Coral for destructive — warmer than blue-shifted reds */
+    --destructive: 8 88% 62%;
+    --destructive-foreground: 36 25% 96%;
+
+    --border: 220 10% 16%;
+    --input: 220 10% 16%;
+    --ring: 38 95% 58%;
+    --radius: 0.5rem;
+
+    /* Status accents — coral / mint / gold / dust */
+    --status-lost: 8 88% 62%;
+    --status-found: 158 70% 52%;
+    --status-matched: 38 95% 58%;
+    --status-pending: 38 95% 58%;
+    --status-archived: 30 6% 50%;
+
+    /* Aurora paint colors used in landing-page accents */
+    --aurora-1: 38 95% 58%;   /* amber */
+    --aurora-2: 18 85% 62%;   /* persimmon */
+    --aurora-3: 158 70% 52%;  /* mint */
+
+    /* Display font reuses the body family */
+    --font-display: var(--font-body);
   }
 }
 
@@ -31,35 +56,392 @@
   * {
     @apply border-border;
   }
+  html {
+    color-scheme: dark;
+  }
   body {
-    @apply bg-background text-foreground antialiased;
-    font-feature-settings: "rlig" 1, "calt" 1;
+    @apply bg-background text-foreground antialiased font-sans;
+    font-feature-settings: "rlig" 1, "calt" 1, "ss01", "cv11";
+    /* Aurora atmosphere — three soft color washes layered over near-black.
+       Reads as "warm tech": treasure gold from above, persimmon glow at
+       upper-right, mint accent at lower-left. */
+    background-image:
+      radial-gradient(
+        ellipse 50% 45% at 50% -15%,
+        hsl(var(--aurora-1) / 0.16) 0%,
+        transparent 65%
+      ),
+      radial-gradient(
+        ellipse 55% 40% at 100% 0%,
+        hsl(var(--aurora-2) / 0.10) 0%,
+        transparent 60%
+      ),
+      radial-gradient(
+        ellipse 70% 50% at 0% 110%,
+        hsl(var(--aurora-3) / 0.07) 0%,
+        transparent 55%
+      ),
+      linear-gradient(to bottom, hsl(var(--background)) 0%, hsl(var(--background)) 100%);
+    background-attachment: fixed;
+  }
+
+  h1, h2, h3, h4 {
+    @apply font-display tracking-tight;
+    font-feature-settings: "ss01", "lnum";
+  }
+
+  .lnum, .font-mono, input, textarea, table {
+    font-feature-settings: "lnum", "tnum";
+  }
+
+  ::selection {
+    background-color: hsl(var(--primary) / 0.4);
+    color: hsl(var(--foreground));
   }
 }
 
-html, body { height: 100%; }
+@layer components {
+  /* ===== STAMP — uppercase, tracked, bordered status indicators =========
+     Compact and machined — feels closer to a label-printer than a rubber
+     stamp. */
+  .stamp {
+    @apply inline-flex items-center font-mono font-medium uppercase;
+    @apply px-2 py-0.5 text-[0.65rem] tracking-[0.18em];
+    @apply border rounded-sm select-none;
+  }
 
-/* Amplify authenticator dark overrides */
-[data-amplify-authenticator] {
-  --amplify-colors-background-primary: hsl(222, 47%, 8%);
-  --amplify-colors-background-secondary: hsl(217, 33%, 14%);
-  --amplify-colors-brand-primary-10: hsl(217, 91%, 60%);
-  --amplify-colors-brand-primary-80: hsl(217, 91%, 50%);
-  --amplify-colors-brand-primary-90: hsl(217, 91%, 45%);
-  --amplify-colors-brand-primary-100: hsl(217, 91%, 40%);
-  --amplify-colors-font-interactive: hsl(217, 91%, 60%);
-  --amplify-colors-font-primary: hsl(210, 40%, 96%);
-  --amplify-colors-font-secondary: hsl(215, 20%, 55%);
-  --amplify-colors-border-primary: hsl(217, 33%, 22%);
-  --amplify-colors-border-secondary: hsl(217, 33%, 17%);
-  --amplify-colors-border-focus: hsl(217, 91%, 60%);
-  --amplify-components-button-primary-background-color: hsl(217, 91%, 50%);
-  --amplify-components-button-primary-hover-background-color: hsl(217, 91%, 45%);
-  --amplify-components-fieldcontrol-border-color: hsl(217, 33%, 22%);
-  --amplify-components-fieldcontrol-color: hsl(210, 40%, 96%);
-  --amplify-components-tabs-item-active-color: hsl(217, 91%, 60%);
-  --amplify-components-tabs-item-active-border-color: hsl(217, 91%, 60%);
-  --amplify-components-tabs-item-color: hsl(215, 20%, 55%);
-  --amplify-radii-small: 0.5rem;
-  --amplify-radii-medium: 0.75rem;
+  /* ===== RULE-DOUBLE — paired hairlines, ink-press style divider ======= */
+  .rule-double {
+    @apply relative;
+    background-image:
+      linear-gradient(to right, transparent 0, hsl(var(--border)) 50%, transparent 100%),
+      linear-gradient(to right, transparent 0, hsl(var(--border)) 50%, transparent 100%);
+    background-position: 0 0, 0 4px;
+    background-size: 100% 1px;
+    background-repeat: no-repeat;
+    height: 5px;
+  }
+
+  /* ===== BOARD-CARD — a flyer pinned to the dark grid ================ */
+  .board-card {
+    @apply relative bg-card border border-border rounded-md;
+    @apply transition-[transform,border,box-shadow] duration-300 ease-ink;
+    box-shadow: 0 1px 0 0 hsl(var(--background));
+  }
+  .board-card::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    border-radius: inherit;
+    background: linear-gradient(
+      135deg,
+      hsl(var(--primary) / 0.06) 0%,
+      transparent 30%
+    );
+    opacity: 0;
+    transition: opacity 0.3s cubic-bezier(0.2, 0, 0.1, 1);
+  }
+  .board-card:hover {
+    transform: translateY(-3px);
+    border-color: hsl(var(--primary) / 0.4);
+    box-shadow:
+      0 12px 32px -12px hsl(var(--primary) / 0.18),
+      0 0 0 1px hsl(var(--primary) / 0.2);
+  }
+  .board-card:hover::after { opacity: 1; }
+
+  /* ===== INDEX-NUMBER — large display figures, lining numerals ======== */
+  .index-number {
+    @apply font-display tabular-nums font-medium;
+    font-feature-settings: "lnum", "tnum", "ss01";
+    letter-spacing: -0.04em;
+  }
+
+  /* ===== UNDERLINE-ACCENT — animated gradient underline on words ====== */
+  .underline-accent {
+    position: relative;
+    display: inline-block;
+  }
+  .underline-accent::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -0.12em;
+    height: 3px;
+    background: linear-gradient(
+      90deg,
+      hsl(var(--aurora-1)) 0%,
+      hsl(var(--aurora-2)) 60%,
+      hsl(var(--aurora-1) / 0.3) 100%
+    );
+    box-shadow: 0 0 18px hsl(var(--aurora-1) / 0.5);
+    transform-origin: left center;
+    @apply animate-underline-grow;
+  }
+
+  /* ===== GRID-OVERLAY — subtle dot grid for backgrounds =============== */
+  .grid-overlay {
+    background-image: radial-gradient(
+      hsl(var(--border) / 0.6) 1px,
+      transparent 1px
+    );
+    background-size: 22px 22px;
+  }
 }
+
+/* ===== AMPLIFY OVERRIDES — full dark/tech re-skin ==================
+   Amplify ships with a hard-coded white card. We override the full
+   variable surface AND key component selectors to make the auth UI feel
+   native to TraceFind. */
+
+/* Variable layer — sets every color & radius token Amplify exposes */
+[data-amplify-authenticator],
+[data-amplify-theme] {
+  --amplify-fonts-default-static: var(--font-body);
+  --amplify-fonts-default-variable: var(--font-body);
+  --amplify-radii-xs: 0.25rem;
+  --amplify-radii-small: 0.375rem;
+  --amplify-radii-medium: 0.5rem;
+  --amplify-radii-large: 0.75rem;
+
+  --amplify-colors-background-primary: hsl(var(--card));
+  --amplify-colors-background-secondary: hsl(var(--background));
+  --amplify-colors-background-tertiary: hsl(var(--secondary));
+
+  --amplify-colors-brand-primary-10: hsl(var(--primary) / 0.1);
+  --amplify-colors-brand-primary-20: hsl(var(--primary) / 0.2);
+  --amplify-colors-brand-primary-40: hsl(var(--primary) / 0.4);
+  --amplify-colors-brand-primary-60: hsl(var(--primary));
+  --amplify-colors-brand-primary-80: hsl(199, 89%, 52%);
+  --amplify-colors-brand-primary-90: hsl(199, 89%, 46%);
+  --amplify-colors-brand-primary-100: hsl(199, 89%, 40%);
+
+  --amplify-colors-font-primary: hsl(var(--foreground));
+  --amplify-colors-font-secondary: hsl(var(--muted-foreground));
+  --amplify-colors-font-tertiary: hsl(var(--muted-foreground));
+  --amplify-colors-font-inverse: hsl(var(--primary-foreground));
+  --amplify-colors-font-interactive: hsl(var(--primary));
+  --amplify-colors-font-hover: hsl(var(--foreground));
+  --amplify-colors-font-focus: hsl(var(--primary));
+  --amplify-colors-font-active: hsl(var(--primary));
+  --amplify-colors-font-disabled: hsl(var(--muted-foreground) / 0.5);
+
+  --amplify-colors-border-primary: hsl(var(--border));
+  --amplify-colors-border-secondary: hsl(var(--border));
+  --amplify-colors-border-tertiary: hsl(var(--border));
+  --amplify-colors-border-focus: hsl(var(--primary));
+
+  --amplify-colors-overlay-10: hsl(var(--background) / 0.6);
+  --amplify-colors-overlay-20: hsl(var(--background) / 0.7);
+
+  --amplify-components-authenticator-router-background-color: hsl(var(--card));
+  --amplify-components-authenticator-router-border-color: hsl(var(--border));
+  --amplify-components-authenticator-router-box-shadow:
+    0 24px 64px -32px hsl(var(--primary) / 0.3),
+    0 0 0 1px hsl(var(--border)),
+    0 1px 0 0 hsl(var(--primary) / 0.05) inset;
+
+  --amplify-components-button-primary-background-color: hsl(var(--primary));
+  --amplify-components-button-primary-hover-background-color: hsl(199, 89%, 52%);
+  --amplify-components-button-primary-color: hsl(var(--primary-foreground));
+  --amplify-components-button-link-color: hsl(var(--primary));
+  --amplify-components-button-link-hover-background-color: hsl(var(--primary) / 0.1);
+
+  --amplify-components-fieldcontrol-border-color: hsl(var(--border));
+  --amplify-components-fieldcontrol-color: hsl(var(--foreground));
+  --amplify-components-fieldcontrol-focus-border-color: hsl(var(--primary));
+
+  --amplify-components-tabs-item-active-color: hsl(var(--primary));
+  --amplify-components-tabs-item-active-border-color: hsl(var(--primary));
+  --amplify-components-tabs-item-color: hsl(var(--muted-foreground));
+  --amplify-components-tabs-item-hover-color: hsl(var(--foreground));
+  --amplify-components-tabs-border-color: hsl(var(--border));
+
+  --amplify-components-heading-color: hsl(var(--foreground));
+  --amplify-components-text-color: hsl(var(--foreground));
+}
+
+/* Selector layer — direct overrides Amplify variables don't reach.
+   Without these, the inner Authenticator.Router and form bg stay white. */
+[data-amplify-authenticator] [data-amplify-router] {
+  background-color: hsl(var(--card)) !important;
+  border: 1px solid hsl(var(--border)) !important;
+  border-radius: 0.75rem !important;
+  box-shadow:
+    0 24px 64px -32px hsl(var(--primary) / 0.25),
+    0 1px 0 0 hsl(var(--primary) / 0.06) inset !important;
+}
+[data-amplify-authenticator] [data-amplify-container] {
+  background: transparent !important;
+}
+[data-amplify-authenticator] [data-amplify-form] {
+  background-color: transparent !important;
+  padding: 1.5rem 1.75rem 1.75rem !important;
+}
+[data-amplify-authenticator] [data-amplify-router-content],
+[data-amplify-authenticator] section {
+  background: transparent !important;
+}
+[data-amplify-authenticator] fieldset {
+  border: none !important;
+  background: transparent !important;
+}
+
+/* Tabs (Sign In / Create Account) — restyled as labeled segments */
+[data-amplify-authenticator] [role="tablist"] {
+  background-color: hsl(var(--background)) !important;
+  border-bottom: 1px solid hsl(var(--border)) !important;
+  padding: 0.25rem 0.25rem 0 !important;
+  gap: 0.25rem !important;
+}
+[data-amplify-authenticator] [role="tab"] {
+  color: hsl(var(--muted-foreground)) !important;
+  font-size: 0.75rem !important;
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.18em !important;
+  padding: 0.875rem 1rem !important;
+  border: 0 !important;
+  border-bottom: 2px solid transparent !important;
+  background: transparent !important;
+  transition: color 0.2s, border-color 0.2s;
+}
+[data-amplify-authenticator] [role="tab"][aria-selected="true"] {
+  color: hsl(var(--primary)) !important;
+  border-bottom-color: hsl(var(--primary)) !important;
+}
+[data-amplify-authenticator] [role="tab"]:hover {
+  color: hsl(var(--foreground)) !important;
+}
+
+/* Inputs — match our Input primitive */
+[data-amplify-authenticator] input {
+  background-color: hsl(var(--card) / 0.4) !important;
+  border: 1px solid hsl(var(--input)) !important;
+  border-radius: 0.5rem !important;
+  color: hsl(var(--foreground)) !important;
+  height: 2.75rem !important;
+  padding: 0 1rem !important;
+  font-size: 0.95rem !important;
+  transition: border-color 0.2s, box-shadow 0.2s, background-color 0.2s !important;
+}
+[data-amplify-authenticator] input::placeholder {
+  color: hsl(var(--muted-foreground) / 0.65) !important;
+}
+[data-amplify-authenticator] input:focus,
+[data-amplify-authenticator] input:focus-visible {
+  outline: none !important;
+  border-color: hsl(var(--primary)) !important;
+  background-color: hsl(var(--card)) !important;
+  box-shadow: 0 0 0 3px hsl(var(--primary) / 0.15) !important;
+}
+
+/* Field labels — small, mono, tracked */
+[data-amplify-authenticator] .amplify-field__label,
+[data-amplify-authenticator] label {
+  font-family: var(--font-mono) !important;
+  font-size: 0.65rem !important;
+  font-weight: 500 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.18em !important;
+  color: hsl(var(--muted-foreground)) !important;
+  margin-bottom: 0.5rem !important;
+}
+
+/* Show/hide password toggle */
+[data-amplify-authenticator] .amplify-field-group__inner-end button,
+[data-amplify-authenticator] [data-amplify-field-group] button {
+  background-color: transparent !important;
+  border-color: hsl(var(--input)) !important;
+  border-left: 0 !important;
+  color: hsl(var(--muted-foreground)) !important;
+  border-radius: 0 0.5rem 0.5rem 0 !important;
+}
+[data-amplify-authenticator] .amplify-field-group__inner-end button:hover {
+  color: hsl(var(--foreground)) !important;
+  background-color: hsl(var(--accent)) !important;
+}
+
+/* Primary button — match our Button primitive */
+[data-amplify-authenticator] button[type="submit"],
+[data-amplify-authenticator] button[data-variation="primary"] {
+  background-color: hsl(var(--primary)) !important;
+  color: hsl(var(--primary-foreground)) !important;
+  border: 0 !important;
+  border-radius: 0.5rem !important;
+  height: 2.75rem !important;
+  font-weight: 600 !important;
+  font-size: 0.95rem !important;
+  letter-spacing: -0.01em !important;
+  box-shadow:
+    0 0 0 1px hsl(var(--primary) / 0.4),
+    0 8px 24px -12px hsl(var(--primary) / 0.5) !important;
+  transition: background-color 0.2s, box-shadow 0.2s, transform 0.1s !important;
+}
+[data-amplify-authenticator] button[type="submit"]:hover {
+  background-color: hsl(199, 89%, 52%) !important;
+  box-shadow:
+    0 0 0 1px hsl(var(--primary) / 0.6),
+    0 12px 32px -12px hsl(var(--primary) / 0.6) !important;
+}
+[data-amplify-authenticator] button[type="submit"]:active {
+  transform: translateY(1px);
+}
+
+/* Link buttons (Forgot password, etc.) */
+[data-amplify-authenticator] button[data-variation="link"] {
+  color: hsl(var(--primary)) !important;
+  font-weight: 500 !important;
+  font-size: 0.85rem !important;
+}
+[data-amplify-authenticator] button[data-variation="link"]:hover {
+  background-color: hsl(var(--primary) / 0.1) !important;
+}
+
+/* Heading inside the auth card (e.g. "Create Account") */
+[data-amplify-authenticator] .amplify-heading {
+  color: hsl(var(--foreground)) !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.02em !important;
+}
+
+/* Error & alert pills */
+[data-amplify-authenticator] [role="alert"],
+[data-amplify-authenticator] .amplify-alert {
+  background-color: hsl(var(--destructive) / 0.1) !important;
+  border: 1px solid hsl(var(--destructive) / 0.4) !important;
+  color: hsl(var(--destructive)) !important;
+  border-radius: 0.5rem !important;
+  font-size: 0.85rem !important;
+}
+
+/* Divider used in some flows */
+[data-amplify-authenticator] hr,
+[data-amplify-authenticator] .amplify-divider {
+  border-color: hsl(var(--border)) !important;
+}
+
+/* Auth card lift-in animation on first paint */
+[data-amplify-authenticator] [data-amplify-router] {
+  animation: fade-in-up 0.55s cubic-bezier(0.2, 0, 0.1, 1) both;
+}
+
+/* When the Authenticator is showing (unauthenticated), make sure its
+   container is centered & has breathing room */
+[data-amplify-authenticator] {
+  min-height: 100vh;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+  background: transparent !important;
+}
+[data-amplify-authenticator] [data-amplify-router] {
+  width: 100%;
+  max-width: 28rem;
+  overflow: hidden;
+}
+
+html, body { height: 100%; }

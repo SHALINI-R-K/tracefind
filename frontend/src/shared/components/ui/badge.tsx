@@ -2,24 +2,38 @@ import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/shared/lib/utils";
 
+/**
+ * Badges are compact label-stamps. Uppercase mono with letter tracking,
+ * 1px border in the accent color, soft tinted background. Distinct enough
+ * to scan in a list, restrained enough to live next to other UI.
+ */
 const badgeVariants = cva(
-  "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+  [
+    "inline-flex items-center font-mono font-medium uppercase",
+    "px-2 py-0.5 text-[0.65rem] tracking-[0.18em]",
+    "border rounded-sm select-none",
+    "transition-colors duration-200 ease-ink",
+  ].join(" "),
   {
     variants: {
       variant: {
-        default: "border-transparent bg-primary text-primary-foreground",
-        secondary: "border-transparent bg-secondary text-secondary-foreground",
-        destructive: "border-transparent bg-destructive text-destructive-foreground",
-        outline: "text-foreground",
-        lost: "border-transparent bg-red-500/15 text-red-400",
-        found: "border-transparent bg-emerald-500/15 text-emerald-400",
-        active: "border-transparent bg-blue-500/15 text-blue-400",
-        matched: "border-transparent bg-amber-500/15 text-amber-400",
-        claimed: "border-transparent bg-emerald-500/15 text-emerald-400",
-        pending: "border-transparent bg-amber-500/15 text-amber-400",
-        confirmed: "border-transparent bg-emerald-500/15 text-emerald-400",
-        rejected: "border-transparent bg-red-500/15 text-red-400",
-        archived: "border-transparent bg-zinc-500/15 text-zinc-400",
+        default: "border-primary/40 text-primary bg-primary/10",
+        secondary: "border-border text-foreground bg-secondary",
+        outline: "border-border text-foreground bg-transparent",
+        destructive: "border-destructive/40 text-destructive bg-destructive/10",
+
+        // Item types
+        lost: "border-status-lost/40 text-status-lost bg-status-lost/[0.08]",
+        found: "border-status-found/40 text-status-found bg-status-found/[0.08]",
+
+        // Statuses
+        active: "border-primary/40 text-primary bg-primary/[0.08]",
+        matched: "border-status-matched/40 text-status-matched bg-status-matched/[0.08]",
+        pending: "border-status-pending/40 text-status-pending bg-status-pending/[0.08]",
+        confirmed: "border-status-found/40 text-status-found bg-status-found/[0.08]",
+        claimed: "border-status-found/40 text-status-found bg-status-found/[0.08]",
+        rejected: "border-status-archived/40 text-status-archived bg-status-archived/[0.08] line-through decoration-1",
+        archived: "border-status-archived/40 text-status-archived bg-status-archived/[0.08]",
       },
     },
     defaultVariants: { variant: "default" },
