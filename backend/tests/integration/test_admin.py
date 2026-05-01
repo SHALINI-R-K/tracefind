@@ -44,7 +44,7 @@ def test_archive_writes_audit_entry(dynamo_tables) -> None:
             type="lost",
             description="something inappropriate",
             category="other",
-            image_data_uri=_img(),
+            image_data_uris=(_img(),),
         )
     )
     cmd = ModerateReportCommand(item_repo=item_repo, audit_repo=audit_repo)
@@ -73,7 +73,7 @@ def test_override_match_creates_match_and_audit(dynamo_tables) -> None:
             type="lost",
             description="lost set of keys with red lanyard",
             category="keys",
-            image_data_uri=_img(),
+            image_data_uris=(_img(),),
         )
     )
     found = create.execute(
@@ -82,7 +82,7 @@ def test_override_match_creates_match_and_audit(dynamo_tables) -> None:
             type="found",
             description="found keys near library entrance",
             category="keys",
-            image_data_uri=_img(),
+            image_data_uris=(_img(),),
         )
     )
     cmd = OverrideMatchCommand(

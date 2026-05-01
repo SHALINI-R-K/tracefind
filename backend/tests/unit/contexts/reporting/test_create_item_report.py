@@ -64,7 +64,7 @@ def test_create_item_report_persists_and_emits_event() -> None:
             type="lost",
             description="black backpack with red zipper",
             category="bag",
-            image_data_uri=image,
+            image_data_uris=(image,),
         )
     )
     assert view.type == "lost"

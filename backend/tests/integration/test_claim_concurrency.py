@@ -47,7 +47,7 @@ def _seed_match(dynamo_tables) -> tuple[str, str, str]:
             type="lost",
             description="black leather wallet with cards",
             category="wallet",
-            image_data_uri=_img(),
+            image_data_uris=(_img(),),
         )
     )
     found = create.execute(
@@ -56,7 +56,7 @@ def _seed_match(dynamo_tables) -> tuple[str, str, str]:
             type="found",
             description="leather wallet found near gate",
             category="wallet",
-            image_data_uri=_img(),
+            image_data_uris=(_img(),),
         )
     )
 

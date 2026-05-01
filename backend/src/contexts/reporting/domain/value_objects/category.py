@@ -5,8 +5,11 @@ from dataclasses import dataclass
 from shared.domain.exceptions.domain_exception import InvalidInputError
 
 _ALLOWED = {
-    "bag", "wallet", "phone", "laptop", "keys",
-    "documents", "clothing", "jewelry", "book", "other",
+    "accessory", "backpack", "bag", "book", "bottle",
+    "camera", "card", "charger", "clothing", "documents",
+    "earphones", "glasses", "headphones", "jacket", "jewelry",
+    "keys", "laptop", "pen", "phone", "shoes",
+    "tablet", "umbrella", "wallet", "watch", "other",
 }
 
 

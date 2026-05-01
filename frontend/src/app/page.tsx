@@ -44,14 +44,11 @@ const features = [
 export default function Home() {
   return (
     <div className="relative min-h-screen overflow-hidden">
-      {/* Ambient grid backdrop */}
+      {/* Ambient grid backdrop — kept very subtle */}
       <div
-        className="pointer-events-none fixed inset-0 grid-overlay opacity-[0.5]"
+        className="pointer-events-none fixed inset-0 grid-overlay opacity-[0.18]"
         aria-hidden
       />
-      {/* Edge rules */}
-      <div className="pointer-events-none fixed left-8 top-0 hidden h-screen w-px bg-border/60 md:block" />
-      <div className="pointer-events-none fixed right-8 top-0 hidden h-screen w-px bg-border/60 md:block" />
 
       {/* Masthead */}
       <header className="relative mx-auto flex max-w-6xl items-center justify-between px-6 pt-10 pb-6 md:px-12">
@@ -70,11 +67,11 @@ export default function Home() {
 
         <nav className="flex items-center gap-1 text-sm">
           <Button variant="ghost" size="sm" asChild>
-            <Link href="/dashboard">Sign in</Link>
+            <Link href="/signin">Sign in</Link>
           </Button>
           <Button size="sm" asChild>
-            <Link href="/dashboard">
-              Open dashboard
+            <Link href="/signup">
+              Sign up
               <ArrowUpRight className="ml-1.5 h-3.5 w-3.5" />
             </Link>
           </Button>
@@ -144,13 +141,13 @@ export default function Home() {
               style={{ animationDelay: "640ms" }}
             >
               <Button size="lg" asChild>
-                <Link href="/dashboard">
+                <Link href="/signup">
                   Get started
                   <ArrowUpRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
               <Button variant="outline" size="lg" asChild>
-                <Link href="/dashboard/report">Report an item</Link>
+                <Link href="/signin">Sign in</Link>
               </Button>
             </div>
           </div>
@@ -285,13 +282,13 @@ export default function Home() {
             </p>
             <div className="mt-8 flex flex-wrap justify-center gap-3">
               <Button size="lg" asChild>
-                <Link href="/dashboard/report">
-                  Report an item
+                <Link href="/signup">
+                  Create account
                   <ArrowUpRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
               <Button variant="ghost" size="lg" asChild>
-                <Link href="/dashboard">Open dashboard</Link>
+                <Link href="/signin">Already have an account? Sign in</Link>
               </Button>
             </div>
           </div>

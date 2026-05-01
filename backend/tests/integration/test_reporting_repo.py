@@ -36,7 +36,7 @@ def test_create_and_list(dynamo_tables) -> None:
             type="lost",
             description="black backpack with red zipper",
             category="bag",
-            image_data_uri=_img(),
+            image_data_uris=(_img(),),
         )
     )
     cmd.execute(
@@ -45,7 +45,7 @@ def test_create_and_list(dynamo_tables) -> None:
             type="found",
             description="silver phone in cafeteria",
             category="phone",
-            image_data_uri=_img(),
+            image_data_uris=(_img(),),
         )
     )
     items, _ = repo.list_by_user(UserId(user_id), limit=10, cursor=None)
@@ -67,7 +67,7 @@ def test_active_candidates_filtered_by_version(dynamo_tables) -> None:
             type="found",
             description="black backpack found in library",
             category="bag",
-            image_data_uri=_img(),
+            image_data_uris=(_img(),),
         )
     )
     candidates = repo.list_active_candidates(
@@ -100,7 +100,7 @@ def test_status_conditional_update(dynamo_tables) -> None:
             type="lost",
             description="another test report description",
             category="other",
-            image_data_uri=_img(),
+            image_data_uris=(_img(),),
         )
     )
     from shared.domain.value_objects.identifier import ItemId

@@ -27,6 +27,9 @@ class ItemReport:
     embedding_model_version: str
     created_at: Timestamp
     ttl: int
+    location: str | None = None
+    incident_at: Timestamp | None = None
+    photo_count: int = 1
     _events: list[DomainEvent] = field(default_factory=list, repr=False)
 
     @classmethod
@@ -41,6 +44,9 @@ class ItemReport:
         embedding_model_version: str,
         created_at: Timestamp,
         ttl_seconds: int,
+        location: str | None = None,
+        incident_at: Timestamp | None = None,
+        photo_count: int = 1,
     ) -> "ItemReport":
         report = cls(
             id=ItemId.new(),
@@ -53,6 +59,9 @@ class ItemReport:
             embedding_model_version=embedding_model_version,
             created_at=created_at,
             ttl=created_at.epoch_seconds() + ttl_seconds,
+            location=location,
+            incident_at=incident_at,
+            photo_count=photo_count,
         )
         report._events.append(
             ItemReported(
@@ -98,4 +107,7 @@ class ItemReport:
             "category": self.category.value if self.category else None,
             "status": self.status.value,
             "created_at": self.created_at.to_iso(),
+            "location": self.location,
+            "incident_at": self.incident_at.to_iso() if self.incident_at else None,
+            "photo_count": self.photo_count,
         }

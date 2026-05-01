@@ -6,6 +6,7 @@ import math
 import os
 import urllib.request
 import urllib.error
+from typing import Sequence
 
 from contexts.reporting.domain.services.embedding_generator import EmbeddingGenerator
 from contexts.reporting.domain.value_objects.description import Description
@@ -25,20 +26,33 @@ class BedrockEmbeddingClient(EmbeddingGenerator):
         self._model_version = model_version
 
     def embed(
-        self, image: ImagePayload, description: Description
+        self,
+        images: Sequence[ImagePayload],
+        description: Description,
+        *,
+        context: str = "",
     ) -> tuple[list[float], str]:
-        # 1. Ask Groq to caption the image
-        groq_caption = self._invoke_groq_vision(image)
-        
-        # 2. Combine user description with AI caption
-        combined_text = f"User Description: {description.value}\n\nAI Visual Analysis: {groq_caption}"
-        
-        # 3. Generate a vector embedding for the combined text
+        # 1. Caption each image via Groq vision (one call per photo)
+        captions = [self._invoke_groq_vision(img) for img in images]
+        if len(captions) == 1:
+            caption_block = f"AI Visual Analysis: {captions[0]}"
+        else:
+            caption_block = "\n".join(
+                f"AI Visual Analysis (photo {i + 1} of {len(captions)}): {c}"
+                for i, c in enumerate(captions)
+            )
+
+        # 2. Compose the text we'll embed: user description, optional
+        # location/incident context, then per-photo captions.
+        sections = [f"User Description: {description.value}"]
+        if context:
+            sections.append(context)
+        sections.append(caption_block)
+        combined_text = "\n\n".join(sections)
+
+        # 3. Single text embedding for the combined corpus
         text_vec = self._invoke_text(combined_text)
-        
-        # We don't use image embeddings anymore, so we return the l2 normalized text embedding.
-        normalized_vec = _l2_normalize(text_vec, 1.0)
-        return normalized_vec, self._model_version
+        return _l2_normalize(text_vec, 1.0), self._model_version
 
     def _invoke_groq_vision(self, image: ImagePayload) -> str:
         api_key = get_secret(_GROQ_SECRET_NAME)
@@ -127,10 +141,19 @@ class FakeEmbeddingClient(EmbeddingGenerator):
         self._model_version = model_version
 
     def embed(
-        self, image: ImagePayload, description: Description
+        self,
+        images: Sequence[ImagePayload],
+        description: Description,
+        *,
+        context: str = "",
     ) -> tuple[list[float], str]:
-        seed = (image.bytes_[:16] + description.value.encode())[:32]
-        vec = [(b / 255.0) * 2 - 1 for b in seed]
+        first_image_bytes = images[0].bytes_ if images else b""
+        seed_input = (
+            first_image_bytes[:16]
+            + description.value.encode()
+            + context.encode()
+        )[:32]
+        vec = [(b / 255.0) * 2 - 1 for b in seed_input]
         while len(vec) < 16:
             vec.append(0.0)
         return vec[:16], self._model_version

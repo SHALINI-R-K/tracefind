@@ -36,12 +36,23 @@ _command = CreateItemReportCommand(
 def lambda_handler(event: dict[str, Any]) -> dict[str, Any]:
     body = parse_body(event)
     user_id = caller_user_id(event)
+
+    # Accept either `images` (new — list of data URIs) or `image` (legacy single)
+    raw_images = body.get("images")
+    if isinstance(raw_images, list):
+        image_data_uris = tuple(uri for uri in raw_images if isinstance(uri, str) and uri)
+    else:
+        single = body.get("image", "")
+        image_data_uris = (single,) if single else tuple()
+
     payload = CreateItemReportInput(
         user_id=user_id,
         type=body.get("type", ""),
         description=body.get("description", ""),
         category=body.get("category"),
-        image_data_uri=body.get("image", ""),
+        image_data_uris=image_data_uris,
+        location=body.get("location"),
+        incident_at_iso=body.get("incident_at"),
     )
     view = _command.execute(payload)
     return response(201, asdict(view))

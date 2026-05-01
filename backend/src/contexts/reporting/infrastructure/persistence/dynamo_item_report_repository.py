@@ -102,7 +102,7 @@ class DynamoItemReportRepository(ItemReportRepository):
     @staticmethod
     def _to_record(report: ItemReport) -> dict[str, Any]:
         day = report.created_at.value.strftime("%Y-%m-%d")
-        return {
+        record: dict[str, Any] = {
             "id": str(report.id),
             "user_id": str(report.user_id),
             "type": report.type.value,
@@ -114,11 +114,18 @@ class DynamoItemReportRepository(ItemReportRepository):
             "created_at": report.created_at.to_iso(),
             "ttl": report.ttl,
             "gsi1_pk": f"{report.type.value}#{day}",
+            "photo_count": report.photo_count,
         }
+        if report.location:
+            record["location"] = report.location
+        if report.incident_at is not None:
+            record["incident_at"] = report.incident_at.to_iso()
+        return record
 
     @staticmethod
     def _from_record(record: dict[str, Any]) -> ItemReport:
         category = record.get("category")
+        incident_at_raw = record.get("incident_at")
         return ItemReport(
             id=ItemId(record["id"]),
             user_id=UserId(record["user_id"]),
@@ -130,6 +137,9 @@ class DynamoItemReportRepository(ItemReportRepository):
             embedding_model_version=record["embedding_model_version"],
             created_at=Timestamp.from_iso(record["created_at"]),
             ttl=int(record["ttl"]),
+            location=record.get("location"),
+            incident_at=Timestamp.from_iso(incident_at_raw) if incident_at_raw else None,
+            photo_count=int(record.get("photo_count", 1)),
         )
 
 

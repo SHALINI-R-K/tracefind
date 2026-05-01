@@ -12,10 +12,12 @@ import {
   ShieldAlert,
   LogOut,
   Search,
-  ShieldCheck,
-  ArrowLeft,
 } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
+import {
+  AuthShellHeader,
+  AuthShellFooter,
+} from "@/shared/components/auth/AuthShellChrome";
 import { cn } from "@/shared/lib/utils";
 import { listNotifications } from "@/contexts/notification/api/notifications";
 
@@ -72,7 +74,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const visibleNavItems = navItems.filter((item) => !item.adminOnly || isAdmin);
 
   return (
-    <Authenticator components={{ Header: AuthHeader, Footer: AuthFooter }}>
+    <Authenticator
+      components={{
+        Header: () => <AuthShellHeader />,
+        Footer: AuthShellFooter,
+      }}
+    >
       {({ signOut, user }) => (
         <div className="flex min-h-screen bg-background">
       {/* Sidebar */}
@@ -163,43 +170,3 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   );
 }
 
-/* ===== Authenticator chrome ============================================ */
-
-function AuthHeader() {
-  return (
-    <div className="px-7 pt-7 pb-2">
-      <Link
-        href="/"
-        className="inline-flex items-center gap-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
-      >
-        <ArrowLeft className="h-3 w-3" strokeWidth={2.25} />
-        Back home
-      </Link>
-
-      <div className="mt-5 flex items-center gap-2.5">
-        <span className="flex h-9 w-9 items-center justify-center rounded-md bg-primary/15 text-primary ring-1 ring-primary/30">
-          <Search className="h-4 w-4" strokeWidth={2.25} />
-        </span>
-        <p className="text-base font-semibold leading-none tracking-tight">TraceFind</p>
-      </div>
-
-      <h1 className="mt-6 text-2xl font-bold leading-tight tracking-tight">
-        Welcome back
-      </h1>
-      <p className="mt-1.5 text-sm text-muted-foreground">
-        Sign in to your dashboard or create an account.
-      </p>
-    </div>
-  );
-}
-
-function AuthFooter() {
-  return (
-    <div className="border-t border-border bg-card/40 px-7 py-3">
-      <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
-        <ShieldCheck className="h-3 w-3" strokeWidth={2.25} />
-        Secured by Cognito
-      </p>
-    </div>
-  );
-}
