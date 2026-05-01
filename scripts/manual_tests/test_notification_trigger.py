@@ -6,7 +6,7 @@ from decimal import Decimal
 os.environ["ITEMS_TABLE"] = "tracefind-items"
 os.environ["MATCHES_TABLE"] = "tracefind-matches"
 os.environ["NOTIFICATIONS_TABLE"] = "tracefind-notifications"
-os.environ["SES_FROM_EMAIL"] = "no-reply@tracefind.local"
+os.environ["SMTP_FROM_EMAIL"] = "no-reply@tracefind.local"
 os.environ["COGNITO_USER_POOL_ID"] = "ap-south-1_vElJTbFVT"
 os.environ["AWS_REGION"] = "ap-south-1"
 

@@ -24,11 +24,6 @@ def dynamodb_client():
 
 
 @lru_cache(maxsize=1)
-def ses_client():
-    return boto3.client("ses", config=_BOTO_CONFIG, region_name=_region())
-
-
-@lru_cache(maxsize=1)
 def bedrock_runtime_client():
     return boto3.client("bedrock-runtime", config=_BOTO_CONFIG, region_name=_region())
 

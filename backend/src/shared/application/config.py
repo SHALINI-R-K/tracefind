@@ -40,8 +40,8 @@ def embedding_model_version() -> str:
     return env("EMBEDDING_MODEL_VERSION", "titan-mm-v1+titan-text-v2")
 
 
-def ses_from_email() -> str:
-    return env("SES_FROM_EMAIL")
+def smtp_from_email() -> str:
+    return env("SMTP_FROM_EMAIL")
 
 
 def item_ttl_seconds() -> int:

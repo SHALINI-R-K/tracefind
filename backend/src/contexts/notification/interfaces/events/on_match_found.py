@@ -13,7 +13,9 @@ from contexts.notification.application.commands.send_match_notification import (
 from contexts.notification.infrastructure.persistence.dynamo_notification_repository import (
     DynamoNotificationRepository,
 )
-from contexts.notification.infrastructure.ses.ses_email_sender import SesEmailSender
+from contexts.notification.infrastructure.email.gmail_smtp_email_sender import (
+    GmailSmtpEmailSender,
+)
 from shared.application import config
 from shared.infrastructure.logging.structured_logger import get_logger, log
 
@@ -31,8 +33,8 @@ def _process_event(event: dict[str, Any]) -> dict[str, Any]:
     failures: list[dict[str, str]] = []
     # Lazy init to avoid module-level crashes if env vars are missing
     repo = DynamoNotificationRepository(config.notifications_table())
-    sender = SesEmailSender(
-        from_email=config.ses_from_email(),
+    sender = GmailSmtpEmailSender(
+        from_email=config.smtp_from_email(),
         user_directory=CognitoUserDirectory(),
     )
     command = SendMatchNotificationCommand(

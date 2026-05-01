@@ -17,10 +17,11 @@ aws_env = cdk.Environment(
 
 auth = AuthStack(app, f"TraceFind-Auth-{env_name}", env=aws_env)
 data = DataStack(app, f"TraceFind-Data-{env_name}", env=aws_env)
-ses_from_email = os.environ.get("SES_FROM_EMAIL")
-if not ses_from_email:
+smtp_from_email = os.environ.get("SMTP_FROM_EMAIL")
+if not smtp_from_email:
     raise RuntimeError(
-        "SES_FROM_EMAIL is required for synth/deploy — must be a verified SES sender address."
+        "SMTP_FROM_EMAIL is required for synth/deploy — must be the Gmail "
+        "address whose App Password is stored in the tracefind/gmail-smtp secret."
     )
 
 ApiStack(
@@ -36,7 +37,7 @@ ApiStack(
     audit_table=data.audit_table,
     env_name=env_name,
     alarm_email=os.environ.get("ALARM_EMAIL"),
-    ses_from_email=ses_from_email,
+    smtp_from_email=smtp_from_email,
 )
 
 app.synth()

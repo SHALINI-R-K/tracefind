@@ -40,7 +40,7 @@ class ApiStack(Stack):
         notifications_table: ddb.Table,
         audit_table: ddb.Table,
         env_name: str,
-        ses_from_email: str,
+        smtp_from_email: str,
         alarm_email: str | None = None,
         **kwargs,
     ) -> None:
@@ -48,6 +48,7 @@ class ApiStack(Stack):
         self._env_name = env_name
 
         groq_secret_name = "tracefind/groq-api-key"
+        smtp_secret_name = "tracefind/gmail-smtp"
 
         common_env = {
             "ITEMS_TABLE": items_table.table_name,
@@ -63,7 +64,8 @@ class ApiStack(Stack):
             "GROQ_SECRET_NAME": groq_secret_name,
             "GROQ_MODEL": "meta-llama/llama-4-scout-17b-16e-instruct",
             "GROQ_TIMEOUT_SECONDS": "5",
-            "SES_FROM_EMAIL": ses_from_email,
+            "SMTP_FROM_EMAIL": smtp_from_email,
+            "SMTP_SECRET_NAME": smtp_secret_name,
         }
 
         def fn(name: str, handler: str, *, memory: int = 256, timeout: int = 5) -> lambda_.Function:
@@ -190,12 +192,8 @@ class ApiStack(Stack):
             )
         )
 
-        notify_users.add_to_role_policy(
-            iam.PolicyStatement(
-                actions=["ses:SendEmail", "ses:SendRawEmail"],
-                resources=["*"],
-            )
-        )
+        smtp_secret = sm.Secret.from_secret_name_v2(self, "SmtpSecret", smtp_secret_name)
+        smtp_secret.grant_read(notify_users)
         notify_users.add_to_role_policy(
             iam.PolicyStatement(
                 actions=["cognito-idp:AdminGetUser"],
