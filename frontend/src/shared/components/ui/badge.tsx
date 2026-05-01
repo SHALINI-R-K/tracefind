@@ -9,10 +9,10 @@ import { cn } from "@/shared/lib/utils";
  */
 const badgeVariants = cva(
   [
-    "inline-flex items-center font-mono font-medium uppercase",
-    "px-2 py-0.5 text-[0.65rem] tracking-[0.18em]",
-    "border rounded-sm select-none",
-    "transition-colors duration-200 ease-ink",
+    "inline-flex items-center font-medium",
+    "px-2 py-0.5 text-xs",
+    "border rounded-md select-none",
+    "transition-colors duration-150",
   ].join(" "),
   {
     variants: {

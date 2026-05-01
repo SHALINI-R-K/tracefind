@@ -3,16 +3,8 @@ import * as LabelPrimitive from "@radix-ui/react-label";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/shared/lib/utils";
 
-/**
- * Labels are small, monospaced, uppercase, and tracked — like field
- * captions in a technical schematic. They sit above the input with
- * deliberate breathing room.
- */
 const labelVariants = cva(
-  [
-    "block font-mono text-[0.7rem] uppercase tracking-[0.18em] text-muted-foreground",
-    "peer-disabled:cursor-not-allowed peer-disabled:opacity-70",
-  ].join(" ")
+  "text-sm font-medium leading-none text-foreground peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
 );
 
 const Label = React.forwardRef<

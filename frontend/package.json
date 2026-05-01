@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "dev:clean": "npm run clean && next dev",
+    "dev:reset": "powershell -NoProfile -Command \"Get-NetTCPConnection -LocalPort 3000 -EA SilentlyContinue | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force -EA SilentlyContinue }; Remove-Item -Recurse -Force .next -EA SilentlyContinue\" && next dev",
     "build": "next build",
     "build:clean": "npm run clean && next build",
     "clean": "node -e \"require('fs').rmSync('.next', { recursive: true, force: true })\"",

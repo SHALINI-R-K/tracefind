@@ -11,9 +11,7 @@ import {
   ShieldAlert,
   LogOut,
   Search,
-  Sparkles,
   ShieldCheck,
-  Cpu,
   ArrowLeft,
 } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
@@ -21,10 +19,10 @@ import { cn } from "@/shared/lib/utils";
 import { listNotifications } from "@/contexts/notification/api/notifications";
 
 const navItems = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, ord: "01" },
-  { href: "/dashboard/report", label: "Report Item", icon: FileText, ord: "02" },
-  { href: "/dashboard/notifications", label: "Notifications", icon: Bell, ord: "03" },
-  { href: "/dashboard/admin", label: "Admin", icon: ShieldAlert, ord: "04" },
+  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/dashboard/report", label: "Report Item", icon: FileText },
+  { href: "/dashboard/notifications", label: "Notifications", icon: Bell },
+  { href: "/dashboard/admin", label: "Admin", icon: ShieldAlert },
 ];
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -49,129 +47,102 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     <Authenticator components={{ Header: AuthHeader, Footer: AuthFooter }}>
       {({ signOut, user }) => (
         <div className="flex min-h-screen bg-background">
-          {/* Sidebar */}
-          <aside className="sticky top-0 flex h-screen w-72 shrink-0 flex-col border-r border-border bg-card/40 backdrop-blur-sm">
-            <Link
-              href="/"
-              className="block px-6 pt-7 pb-5 transition-colors hover:bg-accent/30"
-            >
-              <div className="flex items-center gap-2.5">
-                <span className="flex h-8 w-8 items-center justify-center rounded-md bg-primary/15 text-primary ring-1 ring-primary/30">
-                  <Search className="h-4 w-4" strokeWidth={2.25} />
-                </span>
-                <span className="text-lg font-semibold tracking-tight">TraceFind</span>
-              </div>
-              <p className="mt-2 font-mono text-[0.65rem] uppercase tracking-[0.28em] text-muted-foreground">
-                AI-powered recovery
-              </p>
-            </Link>
+      {/* Sidebar */}
+      <aside className="sticky top-0 flex h-screen w-60 shrink-0 flex-col border-r border-border bg-card/40 backdrop-blur-sm">
+        <Link
+          href="/"
+          className="flex items-center gap-2.5 px-5 py-4 transition-colors hover:bg-accent/30"
+        >
+          <span className="flex h-7 w-7 items-center justify-center rounded-md bg-primary/15 text-primary ring-1 ring-primary/30">
+            <Search className="h-3.5 w-3.5" strokeWidth={2.25} />
+          </span>
+          <span className="text-base font-semibold tracking-tight">TraceFind</span>
+        </Link>
 
-            <div className="rule-double mx-6" />
+        <div className="border-t border-border" />
 
-            <nav className="flex-1 overflow-y-auto px-3 pt-5">
-              <p className="px-3 pb-2 font-mono text-[0.65rem] uppercase tracking-[0.28em] text-muted-foreground">
-                Navigation
-              </p>
-              <ul className="space-y-0.5">
-                {navItems.map((item) => {
-                  const isActive =
-                    item.href === "/dashboard"
-                      ? pathname === "/dashboard"
-                      : pathname.startsWith(item.href);
-                  const isNotifications = item.href === "/dashboard/notifications";
+        <nav className="flex-1 overflow-y-auto px-3 py-4">
+          <ul className="space-y-1">
+            {navItems.map((item) => {
+              const isActive =
+                item.href === "/dashboard"
+                  ? pathname === "/dashboard"
+                  : pathname.startsWith(item.href);
+              const isNotifications = item.href === "/dashboard/notifications";
 
-                  return (
-                    <li key={item.href}>
-                      <Link
-                        href={item.href}
+              return (
+                <li key={item.href}>
+                  <Link
+                    href={item.href}
+                    className={cn(
+                      "group flex items-center gap-2.5 rounded-md px-3 py-2 text-sm",
+                      "transition-colors duration-150",
+                      isActive
+                        ? "bg-accent text-foreground"
+                        : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"
+                    )}
+                  >
+                    <item.icon className="h-4 w-4 shrink-0" strokeWidth={1.75} />
+                    <span className="flex-1 font-medium">{item.label}</span>
+                    {isNotifications && unreadCount > 0 && (
+                      <span
                         className={cn(
-                          "group relative flex items-center gap-3 rounded-md px-3 py-2.5",
-                          "text-sm transition-colors duration-200",
-                          isActive
-                            ? "bg-primary/10 text-primary ring-1 ring-primary/30"
-                            : "text-muted-foreground hover:bg-accent hover:text-foreground"
+                          "flex h-5 min-w-[1.25rem] items-center justify-center rounded-full px-1.5 text-xs font-semibold",
+                          "bg-primary text-primary-foreground"
                         )}
                       >
-                        <span
-                          className={cn(
-                            "font-mono text-[0.65rem] tabular-nums",
-                            isActive ? "text-primary/70" : "text-muted-foreground/60"
-                          )}
-                        >
-                          {item.ord}
-                        </span>
-                        <item.icon className="h-4 w-4 shrink-0" strokeWidth={1.75} />
-                        <span className="flex-1 font-medium">{item.label}</span>
-                        {isNotifications && unreadCount > 0 && (
-                          <span
-                            className={cn(
-                              "flex h-5 min-w-[1.25rem] items-center justify-center rounded-full px-1.5",
-                              "font-mono text-[0.65rem] font-bold",
-                              isActive
-                                ? "bg-primary text-primary-foreground"
-                                : "bg-destructive text-destructive-foreground"
-                            )}
-                          >
-                            {unreadCount > 9 ? "9+" : unreadCount}
-                          </span>
-                        )}
-                      </Link>
-                    </li>
-                  );
-                })}
-              </ul>
-            </nav>
+                        {unreadCount > 9 ? "9+" : unreadCount}
+                      </span>
+                    )}
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </nav>
 
-            <div className="border-t border-border p-4">
-              <div className="flex items-center gap-3 rounded-md px-2 py-2">
-                <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary/15 text-primary ring-1 ring-primary/30 text-xs font-bold uppercase">
-                  {(user?.signInDetails?.loginId ?? "U")[0]}
-                </div>
-                <div className="flex-1 truncate">
-                  <p className="font-mono text-[0.6rem] uppercase tracking-[0.2em] text-muted-foreground">
-                    Signed in
-                  </p>
-                  <p className="truncate text-[0.8rem] text-foreground">
-                    {user?.signInDetails?.loginId ?? "User"}
-                  </p>
-                </div>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="mt-2 w-full justify-start text-muted-foreground hover:text-destructive"
-                onClick={signOut}
-              >
-                <LogOut className="mr-2 h-4 w-4" strokeWidth={1.75} />
-                Sign out
-              </Button>
+        <div className="border-t border-border p-3">
+          <div className="flex items-center gap-2.5 rounded-md px-2 py-2">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-primary/15 text-primary text-xs font-semibold uppercase ring-1 ring-primary/30">
+              {(user?.signInDetails?.loginId ?? "U")[0]}
             </div>
-          </aside>
-
-          <main className="relative flex-1 overflow-x-hidden">
-            <div
-              className="pointer-events-none absolute inset-0 grid-overlay opacity-[0.35]"
-              aria-hidden
-            />
-            <div className="relative mx-auto max-w-5xl px-10 py-12">{children}</div>
-          </main>
+            <div className="flex-1 truncate">
+              <p className="truncate text-sm font-medium text-foreground">
+                {user?.signInDetails?.loginId ?? "User"}
+              </p>
+              <p className="truncate text-xs text-muted-foreground">Signed in</p>
+            </div>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="mt-1 w-full justify-start text-muted-foreground hover:text-destructive"
+            onClick={signOut}
+          >
+            <LogOut className="mr-2 h-4 w-4" strokeWidth={1.75} />
+            Sign out
+          </Button>
         </div>
+      </aside>
+
+      {/* Main */}
+      <main className="relative flex-1 overflow-x-hidden">
+        <div className="mx-auto max-w-6xl px-8 py-8">{children}</div>
+      </main>
+    </div>
       )}
     </Authenticator>
   );
 }
 
-/* ===== Authenticator chrome ============================================
-   These render INSIDE the auth card, but we wrap the whole login screen
-   with our own background shell via globals.css + body backdrop. The
-   Header/Footer here just give the card itself a brand presence.       */
+/* ===== Authenticator chrome ============================================ */
 
 function AuthHeader() {
   return (
     <div className="px-7 pt-7 pb-2">
       <Link
         href="/"
-        className="inline-flex items-center gap-1.5 text-xs uppercase tracking-[0.2em] text-muted-foreground transition-colors hover:text-foreground"
+        className="inline-flex items-center gap-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
       >
         <ArrowLeft className="h-3 w-3" strokeWidth={2.25} />
         Back home
@@ -181,21 +152,14 @@ function AuthHeader() {
         <span className="flex h-9 w-9 items-center justify-center rounded-md bg-primary/15 text-primary ring-1 ring-primary/30">
           <Search className="h-4 w-4" strokeWidth={2.25} />
         </span>
-        <div>
-          <p className="text-base font-semibold leading-none tracking-tight">
-            TraceFind
-          </p>
-          <p className="mt-1 font-mono text-[0.6rem] uppercase tracking-[0.25em] text-muted-foreground">
-            AI-powered recovery
-          </p>
-        </div>
+        <p className="text-base font-semibold leading-none tracking-tight">TraceFind</p>
       </div>
 
-      <h1 className="mt-6 font-display text-2xl font-bold leading-tight tracking-tight">
-        Welcome back.
+      <h1 className="mt-6 text-2xl font-bold leading-tight tracking-tight">
+        Welcome back
       </h1>
       <p className="mt-1.5 text-sm text-muted-foreground">
-        Sign in to your dashboard or create an account to start matching items.
+        Sign in to your dashboard or create an account.
       </p>
     </div>
   );
@@ -203,17 +167,11 @@ function AuthHeader() {
 
 function AuthFooter() {
   return (
-    <div className="border-t border-border bg-card/40 px-7 py-4">
-      <div className="flex items-center justify-between font-mono text-[0.6rem] uppercase tracking-[0.22em] text-muted-foreground">
-        <span className="inline-flex items-center gap-1.5">
-          <ShieldCheck className="h-3 w-3" strokeWidth={2.25} />
-          Cognito secured
-        </span>
-        <span className="inline-flex items-center gap-1.5">
-          <Cpu className="h-3 w-3" strokeWidth={2.25} />
-          v0.1
-        </span>
-      </div>
+    <div className="border-t border-border bg-card/40 px-7 py-3">
+      <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+        <ShieldCheck className="h-3 w-3" strokeWidth={2.25} />
+        Secured by Cognito
+      </p>
     </div>
   );
 }
