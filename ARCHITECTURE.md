@@ -50,7 +50,7 @@ contexts/<context>/
 │
 ├── infrastructure/      ← Adapters: implements domain ports
 │   ├── persistence/     ← DynamoDB repositories
-│   ├── cognito/ | ses/ | embedding/   ← External service adapters
+│   ├── cognito/ | email/ | embedding/   ← External service adapters
 │   └── ...
 │
 └── interfaces/          ← Inbound adapters / driving side
@@ -135,7 +135,7 @@ TraceFind/
 │   │   │   │   │   ├── commands/        # send_match_notification.py
 │   │   │   │   │   └── dtos/
 │   │   │   │   ├── infrastructure/
-│   │   │   │   │   ├── ses/             # ses_email_sender.py
+│   │   │   │   │   ├── email/           # gmail_smtp_email_sender.py
 │   │   │   │   │   └── persistence/     # dynamo_notification_repository.py
 │   │   │   │   └── interfaces/
 │   │   │   │       └── events/          # on_match_found.py
@@ -227,7 +227,7 @@ TraceFind/
 | **Domain Event** | `UserRegistered`, `ItemReported`, `MatchFound`, `ItemClaimed`, `NotificationSent` |
 | **Repository (Port)** | Interfaces in `domain/repositories/`, implementations in `infrastructure/persistence/` |
 | **Application Service / Use Case** | `commands/*` for writes, `queries/*` for reads (CQRS-lite) |
-| **Anti-Corruption Layer** | `infrastructure/cognito/`, `infrastructure/embedding/`, `infrastructure/ses/` translate external models to domain |
+| **Anti-Corruption Layer** | `infrastructure/cognito/`, `infrastructure/embedding/`, `infrastructure/email/` translate external models to domain |
 | **Shared Kernel** | `shared/domain/value_objects/` (`UserId`, `ItemId`) — only ids and base types, no business logic |
 | **Domain Event Bus** | `shared/infrastructure/event_bus/` (EventBridge or DynamoDB Streams) |
 

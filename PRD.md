@@ -104,7 +104,7 @@ TraceFind solves this by providing a centralized, AI-assisted matching service w
 - FR-3: Roles supported: `user`, `admin`.
 
 ### 7.2 Item Reporting
-- FR-4: Users can create a report with: `type` (lost/found), `description`, `image` (base64 or external URL), `location`, `timestamp`, `category`.
+- FR-4: Users can create a report with: `type` (lost/found), `description`, up to 3 `images` (base64 or external URL), `location`, `incident_at` (timestamp), and `category`.
 - FR-5: Images are processed in-memory; no persistent S3 storage.
 - FR-6: Reports are stored in DynamoDB with a TTL for retention compliance.
 
@@ -116,7 +116,7 @@ TraceFind solves this by providing a centralized, AI-assisted matching service w
 
 ### 7.4 Notifications
 - FR-11: When a match exceeds threshold, both the reporter and counterparty are notified.
-- FR-12: Email channel via SES is the sole MVP delivery channel; web push is post-MVP.
+- FR-12: Branded, scannable emails are sent via Gmail SMTP for MVP. Web push is post-MVP.
 - FR-13: In-app notification feed shows match history; backed by a `Notifications` table with read/unread state and a `GET /notifications` paged endpoint.
 - FR-13a: Notifications are persisted with a 90-day TTL.
 
@@ -170,6 +170,7 @@ TraceFind solves this by providing a centralized, AI-assisted matching service w
 - **IaC:** AWS CDK (TypeScript or Python)
 - **Database:** DynamoDB (single-table design)
 - **Auth:** AWS Cognito (User Pools)
+- **Email:** Gmail SMTP using an App Password (via Secrets Manager)
 - **AI:** Embedding model invoked via Bedrock or external inference endpoint
 
 ### 9.3 Data Model (DynamoDB — illustrative)
@@ -281,7 +282,8 @@ Authentication (sign-up, login, password reset) is handled by the **Cognito Host
 | 2 | Similarity threshold default | **0.75** (cosine), tunable per-environment via SSM. |
 | 3 | Anonymous reporting | **Deferred** post-MVP. All MVP reports require authentication. |
 | 4 | Report retention TTL | **90 days** from `created_at`. |
-| 5 | Notification channel for MVP | **Email (SES) + in-app feed.** Web push deferred. |
+| 5 | Notification channel for MVP | **Email (Gmail SMTP) + in-app feed.** Branded transactional templates. |
 | 6 | Matching trigger | **Asynchronous via DynamoDB Streams.** `POST /match` exists only as an admin / replay tool. |
 | 7 | Auth endpoints | **Cognito Hosted UI** owns sign-up/login. PRD §9.4 `/auth/*` rows are removed; only token refresh proxy is exposed. |
 | 8 | Image retention | **Zero persistence.** Raw bytes discarded after embedding extraction. |
+| 9 | Multi-photo support | **Up to 3 photos** per report, combined into a single embedding. |

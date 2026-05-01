@@ -43,7 +43,8 @@ cdk deploy --all
 ```
 
 After deploy, capture the Cognito user pool id, app client id, and API URL into
-`frontend/.env.local`.
+`frontend/.env.local`. Ensure `SMTP_FROM_EMAIL` and `FRONTEND_URL` are set during
+deployment to enable branded match notifications.
 
 ## Frontend
 
@@ -64,7 +65,7 @@ Visit `http://localhost:3000`. Cognito Hosted UI handles sign-up/sign-in.
 | `reporting` | Lost/found report lifecycle | `ItemReport` |
 | `matching` | AI similarity matching (Bedrock Titan + cosine) | `Match` |
 | `claims` | Two-party claim flow with TransactWriteItems lock | `Claim` |
-| `notification` | In-app feed + SES email | `Notification` |
+| `notification` | In-app feed + Gmail SMTP email | `Notification` |
 
 Cross-context coordination is **event-driven**: DynamoDB Streams on the Items
 table trigger matching; streams on the Matches table trigger notifications.

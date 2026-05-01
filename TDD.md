@@ -37,9 +37,9 @@
    │                 │               │
    ▼                 ▼               ▼
 ┌────────────┐  ┌──────────┐   ┌────────────┐
-│ DynamoDB   │  │ AI / ML  │   │   SES /    │
-│ Items,     │  │ Embedding│   │   SNS      │
-│ Matches    │  │ Service  │   │            │
+│ DynamoDB   │  │ AI / ML  │   │   Gmail    │
+│ Items,     │  │ Embedding│   │   SMTP     │
+│ Matches    │  │ Service  │   │   (Gmail)  │
 └────────────┘  └──────────┘   └────────────┘
 ```
 
@@ -82,7 +82,7 @@ Each Lambda maps to a bounded context as defined in [ARCHITECTURE.md](ARCHITECTU
 | `match_items` | matching | DynamoDB Stream on `Items` (primary); `POST /match` (replay) | 1024 MB | 15 s | Compute similarity, persist matches |
 | `get_matches` | matching | API Gateway GET `/items/{id}/matches` | 256 MB | 5 s | Return ranked matches for an item |
 | `claim_item` | claims | API Gateway POST `/items/{id}/claim` | 256 MB | 5 s | Confirm claim with conditional writes |
-| `notify_users` | notification | DynamoDB Stream on `Matches` | 256 MB | 10 s | Persist `Notifications` row + send SES email |
+| `notify_users` | notification | DynamoDB Stream on `Matches` | 256 MB | 10 s | Persist `Notifications` row + send Gmail SMTP email |
 | `get_notifications` | notification | API Gateway GET `/notifications` | 256 MB | 5 s | Paged in-app feed |
 | `mark_notification_read` | notification | API Gateway POST `/notifications/{id}/read` | 256 MB | 5 s | Update read state |
 | `admin_moderate` | reporting | API Gateway `/admin/reports`, `/admin/items/{id}/...` | 256 MB | 5 s | Admin moderation; writes `AdminAuditLog` |
@@ -95,11 +95,11 @@ Each Lambda maps to a bounded context as defined in [ARCHITECTURE.md](ARCHITECTU
 #### 2.3.1 `create_item` — Detailed Flow
 1. Validate JWT claims, extract `user_id`.
 2. Validate payload (size, MIME, required fields).
-3. Decode base64 image → in-memory bytes.
-4. Call embedding service → `image_embedding` (vector).
+3. Decode base64 images → in-memory bytes (up to 3).
+4. Call embedding service → `image_embedding` (pooled vector from all photos).
 5. Call text embedding for description → `text_embedding`.
 6. Combine via weighted concat or stored separately.
-7. `PutItem` into `Items` with TTL (e.g., 90 days).
+7. `PutItem` into `Items` with TTL, location, and incident timestamp.
 8. Emit event for `match_items` (via DynamoDB Stream or direct invoke).
 9. Return `201 Created` with item id.
 
@@ -124,9 +124,12 @@ Each Lambda maps to a bounded context as defined in [ARCHITECTURE.md](ARCHITECTU
 | `embedding` | List<Number> | Concatenated vector |
 | `embedding_model_version` | String | e.g. `titan-mm-v1+titan-text-v2` — set at write time so future model swaps are detectable |
 | `status` | String | `active` / `matched` / `claimed` |
+| `location` | String | Optional (e.g. "Library 2nd Floor") |
+| `incident_at`| String | Optional (ISO 8601) |
+| `photo_count`| Number | Integer (1-3) |
 | `created_at` | String | ISO 8601 |
 | `ttl` | Number | Epoch seconds for retention (90 days) |
-| `gsi1_pk` | String | `type#<bucket>` where bucket = `created_at` truncated to day, to avoid hot partitions on a 2-value `type` |
+| `gsi1_pk` | String | `type#<bucket>` where bucket = `created_at` truncated to day |
 
 **GSIs:**
 - `GSI1` — PK: `gsi1_pk` (`type#YYYY-MM-DD`), SK: `created_at` — matching scans bounded by recent days
@@ -214,7 +217,9 @@ Create a new lost or found report.
   "type": "lost",
   "description": "black leather backpack with red zipper",
   "category": "bag",
-  "image": "data:image/jpeg;base64,...."
+  "location": "Library 2nd Floor",
+  "incident_at": "2026-05-01T14:00:00Z",
+  "image_data_uris": ["data:image/jpeg;base64,...."]
 }
 ```
 
@@ -482,7 +487,7 @@ User → Next.js → POST /items (JWT, base64 image)
 | 1 | Bedrock Titan vs. self-hosted CLIP | **Bedrock Titan Multimodal + Titan Text v2** | Managed scaling, no model-hosting overhead, acceptable cost (~$0.001/report) |
 | 2 | DynamoDB Streams vs. EventBridge for `create_item → match_items` | **DynamoDB Streams** | Lower latency, exactly-once per shard, no extra IAM surface |
 | 3 | Sync vs. async matching | **Async via DDB Stream** | Keeps `POST /items` p95 < 2 s; user sees progressive UI |
-| 4 | Notification channel for MVP | **SES email + in-app feed (DDB)** | Web push deferred — extra infra not justified for pilot |
+| 4 | Notification channel for MVP | **Gmail SMTP email + in-app feed (DDB)** | Branded, scannable transactional templates |
 | 5 | Embedding model versioning | **`embedding_model_version` column on `Items`**, enforced at compare time | Prevents silent corruption when model changes |
 | 6 | GSI hot-partition risk on `type` | **Composite key `type#YYYY-MM-DD`** | Spreads load across day-buckets while keeping queries efficient |
 | 7 | Claim concurrency | **`TransactWriteItems` with conditional updates** | Prevents double-claim race; loser gets `409` |
