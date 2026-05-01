@@ -11,7 +11,7 @@ from contexts.notification.domain.repositories.notification_repository import (
     NotificationRepository,
 )
 from contexts.notification.domain.services.email_sender import EmailSender
-from contexts.notification.domain.value_objects.channel import NotificationType
+from shared.domain.exceptions.domain_exception import ConflictError
 from shared.domain.value_objects.identifier import UserId
 
 _logger = get_logger("notification.send_match_notification")
@@ -24,14 +24,30 @@ class SendMatchNotificationCommand:
     ttl_seconds: int
 
     def execute(self, *, user_id: str, payload: dict[str, Any]) -> None:
-        notification = Notification.create(
+        match_id = payload.get("match_id")
+        if not match_id:
+            raise ValueError("payload.match_id is required for idempotent send")
+
+        notification = Notification.for_match(
             user_id=UserId(user_id),
-            type=NotificationType.MATCH_FOUND,
+            match_id=str(match_id),
             payload=payload,
             ttl_seconds=self.ttl_seconds,
         )
-        self.repository.save(notification)
-        
+        try:
+            self.repository.save(notification)
+        except ConflictError:
+            # Stream retry / batch redelivery — already notified this user for
+            # this match. Skip email so we don't double-send.
+            log(
+                _logger,
+                logging.INFO,
+                "duplicate_notification_skipped",
+                user_id=user_id,
+                match_id=match_id,
+            )
+            return
+
         try:
             self.email_sender.send(
                 to_user_id=user_id,

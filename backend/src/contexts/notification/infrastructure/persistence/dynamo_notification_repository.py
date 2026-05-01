@@ -5,13 +5,14 @@ import json
 from typing import Any
 
 from boto3.dynamodb.conditions import Key
+from botocore.exceptions import ClientError
 
 from contexts.notification.domain.entities.notification import Notification
 from contexts.notification.domain.repositories.notification_repository import (
     NotificationRepository,
 )
 from contexts.notification.domain.value_objects.channel import NotificationType
-from shared.domain.exceptions.domain_exception import NotFoundError
+from shared.domain.exceptions.domain_exception import ConflictError, NotFoundError
 from shared.domain.value_objects.identifier import NotificationId, UserId
 from shared.domain.value_objects.timestamp import Timestamp
 from shared.infrastructure.aws.boto3_clients import dynamodb_resource
@@ -22,17 +23,25 @@ class DynamoNotificationRepository(NotificationRepository):
         self._table = dynamodb_resource().Table(table_name)
 
     def save(self, notification: Notification) -> None:
-        self._table.put_item(
-            Item={
-                "id": str(notification.id),
-                "user_id": str(notification.user_id),
-                "type": notification.type.value,
-                "payload": notification.payload,
-                "read": notification.read,
-                "created_at": notification.created_at.to_iso(),
-                "ttl": notification.ttl,
-            }
-        )
+        try:
+            self._table.put_item(
+                Item={
+                    "id": str(notification.id),
+                    "user_id": str(notification.user_id),
+                    "type": notification.type.value,
+                    "payload": notification.payload,
+                    "read": notification.read,
+                    "created_at": notification.created_at.to_iso(),
+                    "ttl": notification.ttl,
+                },
+                ConditionExpression="attribute_not_exists(id)",
+            )
+        except ClientError as exc:
+            if exc.response.get("Error", {}).get("Code") == "ConditionalCheckFailedException":
+                raise ConflictError(
+                    f"notification {notification.id} already exists"
+                ) from exc
+            raise
 
     def get(self, notification_id: NotificationId) -> Notification:
         resp = self._table.get_item(Key={"id": str(notification_id)})

@@ -28,6 +28,7 @@ def lambda_handler(event: dict[str, Any], _context: Any) -> dict[str, Any]:
 
 def _process_event(event: dict[str, Any]) -> dict[str, Any]:
     sent = 0
+    failures: list[dict[str, str]] = []
     # Lazy init to avoid module-level crashes if env vars are missing
     repo = DynamoNotificationRepository(config.notifications_table())
     sender = SesEmailSender(
@@ -44,17 +45,17 @@ def _process_event(event: dict[str, Any]) -> dict[str, Any]:
         log(_logger, logging.INFO, "processing_record", event_name=record.get("eventName"))
         if record.get("eventName") not in ["INSERT", "MODIFY"]:
             continue
-            
+
         new_image = record.get("dynamodb", {}).get("NewImage", {})
         match_id = (new_image.get("id") or {}).get("S")
         score_str = (new_image.get("score") or {}).get("N", "0")
         score = Decimal(score_str)
         lost_item_id = (new_image.get("lost_item_id") or {}).get("S")
         found_item_id = (new_image.get("found_item_id") or {}).get("S")
-        
-        log(_logger, logging.INFO, "parsed_match", 
+
+        log(_logger, logging.INFO, "parsed_match",
             match_id=match_id, lost_id=lost_item_id, found_id=found_item_id)
-        
+
         if not all([match_id, lost_item_id, found_item_id]):
             log(_logger, logging.WARNING, "missing_fields", match_id=match_id)
             continue
@@ -62,7 +63,7 @@ def _process_event(event: dict[str, Any]) -> dict[str, Any]:
         # Fetch both reports
         lost_report, found_report = _get_reports(lost_item_id, found_item_id) # type: ignore
         if not lost_report or not found_report:
-            log(_logger, logging.ERROR, "reports_missing", 
+            log(_logger, logging.ERROR, "reports_missing",
                 match_id=match_id, lost_id=lost_item_id, found_id=found_item_id,
                 lost_found=(bool(lost_report), bool(found_report)))
             continue
@@ -77,6 +78,7 @@ def _process_event(event: dict[str, Any]) -> dict[str, Any]:
             (str(found_report.user_id), lost_email, lost_report.description.value, "found")
         ]
 
+        record_failed = False
         for user_id, other_email, other_desc, item_type in participants:
             try:
                 command.execute(
@@ -91,9 +93,17 @@ def _process_event(event: dict[str, Any]) -> dict[str, Any]:
                 )
                 sent += 1
             except Exception as exc: # noqa: BLE001
-                log(_logger, logging.ERROR, "notify_user_failed", 
+                log(_logger, logging.ERROR, "notify_user_failed",
                     match_id=match_id, user_id=user_id, error=str(exc))
+                record_failed = True
 
+        if record_failed:
+            sequence_number = (record.get("dynamodb") or {}).get("SequenceNumber")
+            if sequence_number:
+                failures.append({"itemIdentifier": sequence_number})
+
+    if failures:
+        return {"batchItemFailures": failures, "sent": sent}
     return {"sent": sent}
 
 
