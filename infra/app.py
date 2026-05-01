@@ -24,6 +24,11 @@ if not smtp_from_email:
         "address whose App Password is stored in the tracefind/gmail-smtp secret."
     )
 
+# Public URL where the frontend is hosted — used as the CTA link in
+# match-notification emails. Defaults to a placeholder; override via env
+# in non-dev environments so users land on the real dashboard.
+frontend_url = os.environ.get("FRONTEND_URL", "http://localhost:3000")
+
 ApiStack(
     app,
     f"TraceFind-Api-{env_name}",
@@ -38,6 +43,7 @@ ApiStack(
     env_name=env_name,
     alarm_email=os.environ.get("ALARM_EMAIL"),
     smtp_from_email=smtp_from_email,
+    frontend_url=frontend_url,
 )
 
 app.synth()

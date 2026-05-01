@@ -41,6 +41,7 @@ class ApiStack(Stack):
         audit_table: ddb.Table,
         env_name: str,
         smtp_from_email: str,
+        frontend_url: str,
         alarm_email: str | None = None,
         **kwargs,
     ) -> None:
@@ -66,6 +67,7 @@ class ApiStack(Stack):
             "GROQ_TIMEOUT_SECONDS": "5",
             "SMTP_FROM_EMAIL": smtp_from_email,
             "SMTP_SECRET_NAME": smtp_secret_name,
+            "FRONTEND_URL": frontend_url,
         }
 
         def fn(name: str, handler: str, *, memory: int = 256, timeout: int = 5) -> lambda_.Function:
