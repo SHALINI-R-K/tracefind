@@ -2,11 +2,11 @@ import base64
 
 import pytest
 
-from src.contexts.reporting.domain.value_objects.category import Category
-from src.contexts.reporting.domain.value_objects.description import Description
-from src.contexts.reporting.domain.value_objects.image_payload import ImagePayload
-from src.contexts.reporting.domain.value_objects.report_type import ReportType
-from src.shared.domain.exceptions.domain_exception import InvalidInputError
+from contexts.reporting.domain.value_objects.category import Category
+from contexts.reporting.domain.value_objects.description import Description
+from contexts.reporting.domain.value_objects.image_payload import ImagePayload
+from contexts.reporting.domain.value_objects.report_type import ReportType
+from shared.domain.exceptions.domain_exception import InvalidInputError
 
 
 def test_report_type_parse_and_opposite() -> None:

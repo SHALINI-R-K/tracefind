@@ -20,13 +20,31 @@ export default function AdminPage() {
   const [busy, setBusy] = useState<string | null>(null);
   const [archiveTarget, setArchiveTarget] = useState<string | null>(null);
   const [reason, setReason] = useState("");
+  const [reportsCursor, setReportsCursor] = useState<string | null>(null);
+  const [loadingMore, setLoadingMore] = useState(false);
 
   async function reload() {
     try {
       const [r, a] = await Promise.all([listReports(), listAudit()]);
-      setReports(r.reports); setAudit(a.entries);
+      setReports(r.reports);
+      setReportsCursor(r.next_cursor);
+      setAudit(a.entries);
     } catch (e: unknown) { setError((e as Error).message); }
     finally { setLoading(false); }
+  }
+
+  async function loadMoreReports() {
+    if (!reportsCursor || loadingMore) return;
+    setLoadingMore(true);
+    try {
+      const r = await listReports({ cursor: reportsCursor });
+      setReports((prev) => [...prev, ...r.reports]);
+      setReportsCursor(r.next_cursor);
+    } catch (e: unknown) {
+      setError((e as Error).message);
+    } finally {
+      setLoadingMore(false);
+    }
   }
 
   useEffect(() => { reload(); }, []);
@@ -83,6 +101,13 @@ export default function AdminPage() {
                 </CardContent>
               </Card>
             ))}
+          {!loading && reportsCursor && (
+            <div className="flex justify-center pt-2">
+              <Button variant="outline" size="sm" onClick={loadMoreReports} disabled={loadingMore}>
+                {loadingMore ? <Loader2 className="h-4 w-4 animate-spin" /> : "Load more"}
+              </Button>
+            </div>
+          )}
         </TabsContent>
 
         <TabsContent value="audit" className="mt-4">

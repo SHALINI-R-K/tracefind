@@ -2,28 +2,28 @@ import base64
 
 import pytest
 
-from src.contexts.claims.application.commands.confirm_claim import ConfirmClaimCommand
-from src.contexts.claims.infrastructure.persistence.dynamo_claim_repository import (
+from contexts.claims.application.commands.confirm_claim import ConfirmClaimCommand
+from contexts.claims.infrastructure.persistence.dynamo_claim_repository import (
     DynamoClaimRepository,
 )
-from src.contexts.matching.domain.entities.match import Match
-from src.contexts.matching.domain.value_objects.similarity_score import SimilarityScore
-from src.contexts.matching.infrastructure.embedding.bedrock_embedding_client import (
+from contexts.matching.domain.entities.match import Match
+from contexts.matching.domain.value_objects.similarity_score import SimilarityScore
+from contexts.matching.infrastructure.embedding.bedrock_embedding_client import (
     FakeEmbeddingClient,
 )
-from src.contexts.matching.infrastructure.persistence.dynamo_match_repository import (
+from contexts.matching.infrastructure.persistence.dynamo_match_repository import (
     DynamoMatchRepository,
 )
-from src.contexts.reporting.application.commands.create_item_report import (
+from contexts.reporting.application.commands.create_item_report import (
     CreateItemReportCommand,
 )
-from src.contexts.reporting.application.dtos.report_dto import CreateItemReportInput
-from src.contexts.reporting.infrastructure.persistence.dynamo_item_report_repository import (
+from contexts.reporting.application.dtos.report_dto import CreateItemReportInput
+from contexts.reporting.infrastructure.persistence.dynamo_item_report_repository import (
     DynamoItemReportRepository,
 )
-from src.shared.domain.exceptions.domain_exception import ConflictError
-from src.shared.domain.value_objects.identifier import UserId
-from src.shared.infrastructure.event_bus.dynamodb_stream_event_bus import RecordingEventBus
+from shared.domain.exceptions.domain_exception import ConflictError
+from shared.domain.value_objects.identifier import UserId
+from shared.infrastructure.event_bus.dynamodb_stream_event_bus import RecordingEventBus
 
 
 def _img() -> str:
@@ -61,7 +61,7 @@ def _seed_match(dynamo_tables) -> tuple[str, str, str]:
     )
 
     match_repo = DynamoMatchRepository(dynamo_tables["matches"])
-    from src.shared.domain.value_objects.identifier import ItemId
+    from shared.domain.value_objects.identifier import ItemId
 
     match = Match.propose(
         lost_item_id=ItemId(lost.id),
@@ -83,7 +83,7 @@ def test_first_claim_wins_second_conflicts(dynamo_tables) -> None:
         items_table_name=dynamo_tables["items"],
     )
     item_repo = DynamoItemReportRepository(dynamo_tables["items"])
-    from src.shared.domain.value_objects.identifier import ItemId
+    from shared.domain.value_objects.identifier import ItemId
 
     lost = item_repo.get(ItemId(lost_id))
     result = cmd.execute(
@@ -112,8 +112,8 @@ def test_reject_does_not_lock_items(dynamo_tables) -> None:
         items_table_name=dynamo_tables["items"],
     )
     item_repo = DynamoItemReportRepository(dynamo_tables["items"])
-    from src.contexts.reporting.domain.value_objects.report_status import ReportStatus
-    from src.shared.domain.value_objects.identifier import ItemId
+    from contexts.reporting.domain.value_objects.report_status import ReportStatus
+    from shared.domain.value_objects.identifier import ItemId
 
     lost = item_repo.get(ItemId(lost_id))
     cmd.execute(

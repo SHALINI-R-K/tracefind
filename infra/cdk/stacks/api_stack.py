@@ -40,11 +40,14 @@ class ApiStack(Stack):
         notifications_table: ddb.Table,
         audit_table: ddb.Table,
         env_name: str,
+        ses_from_email: str,
         alarm_email: str | None = None,
         **kwargs,
     ) -> None:
         super().__init__(scope, construct_id, **kwargs)
         self._env_name = env_name
+
+        groq_secret_name = "tracefind/groq-api-key"
 
         common_env = {
             "ITEMS_TABLE": items_table.table_name,
@@ -57,7 +60,10 @@ class ApiStack(Stack):
             "COGNITO_USER_POOL_ID": user_pool.user_pool_id,
             "ENV": env_name,
             "PYTHONPATH": "/var/task",
-            "GROQ_SECRET_NAME": "tracefind/groq-api-key",
+            "GROQ_SECRET_NAME": groq_secret_name,
+            "GROQ_MODEL": "meta-llama/llama-4-scout-17b-16e-instruct",
+            "GROQ_TIMEOUT_SECONDS": "5",
+            "SES_FROM_EMAIL": ses_from_email,
         }
 
         def fn(name: str, handler: str, *, memory: int = 256, timeout: int = 5) -> lambda_.Function:
@@ -170,6 +176,7 @@ class ApiStack(Stack):
                 batch_size=10,
                 bisect_batch_on_error=True,
                 retry_attempts=3,
+                report_batch_item_failures=True,
             )
         )
         notify_users.add_event_source(
@@ -199,13 +206,12 @@ class ApiStack(Stack):
                 iam.PolicyStatement(
                     actions=["bedrock:InvokeModel"],
                     resources=[
-                        f"arn:aws:bedrock:{self.region}::foundation-model/amazon.titan-embed-image-v1",
                         f"arn:aws:bedrock:{self.region}::foundation-model/amazon.titan-embed-text-v2:0",
                     ],
                 )
             )
 
-        groq_secret = sm.Secret.from_secret_name_v2(self, "GroqSecret", "tracefind/groq-api-key")
+        groq_secret = sm.Secret.from_secret_name_v2(self, "GroqSecret", groq_secret_name)
         groq_secret.grant_read(create_item)
         groq_secret.grant_read(admin_reembed)
 

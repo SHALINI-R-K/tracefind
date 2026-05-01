@@ -15,6 +15,7 @@ import {
 import { Button } from "@/shared/components/ui/button";
 import { Separator } from "@/shared/components/ui/separator";
 import { cn } from "@/shared/lib/utils";
+import { listNotifications } from "@/contexts/notification/api/notifications";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -29,7 +30,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   useEffect(() => {
     const fetchUnread = async () => {
       try {
-        const { notifications } = await import("@/contexts/notification/api/notifications").then(m => m.listNotifications());
+        const { notifications } = await listNotifications();
         setUnreadCount(notifications.filter(n => !n.read).length);
       } catch (e) {
         console.error("Failed to fetch notifications", e);

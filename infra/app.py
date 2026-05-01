@@ -17,6 +17,12 @@ aws_env = cdk.Environment(
 
 auth = AuthStack(app, f"TraceFind-Auth-{env_name}", env=aws_env)
 data = DataStack(app, f"TraceFind-Data-{env_name}", env=aws_env)
+ses_from_email = os.environ.get("SES_FROM_EMAIL")
+if not ses_from_email:
+    raise RuntimeError(
+        "SES_FROM_EMAIL is required for synth/deploy — must be a verified SES sender address."
+    )
+
 ApiStack(
     app,
     f"TraceFind-Api-{env_name}",
@@ -30,6 +36,7 @@ ApiStack(
     audit_table=data.audit_table,
     env_name=env_name,
     alarm_email=os.environ.get("ALARM_EMAIL"),
+    ses_from_email=ses_from_email,
 )
 
 app.synth()

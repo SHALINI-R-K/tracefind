@@ -3,7 +3,7 @@ from unittest.mock import patch
 
 import pytest
 
-from src.contexts.identity_access.interfaces.cognito_triggers import pre_signup
+from contexts.identity_access.interfaces.cognito_triggers import pre_signup
 
 
 def _event(email: str, captcha_token: str | None = None) -> dict:

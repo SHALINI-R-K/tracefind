@@ -24,7 +24,7 @@ def dynamo_tables(aws_credentials):
         _create_claims(client, "test-claims")
         _create_notifications(client, "test-notifications")
         _create_audit(client, "test-audit")
-        from src.shared.infrastructure.aws import boto3_clients
+        from shared.infrastructure.aws import boto3_clients
         boto3_clients.dynamodb_resource.cache_clear()
         boto3_clients.dynamodb_client.cache_clear()
         yield {

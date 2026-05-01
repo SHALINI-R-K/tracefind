@@ -1,7 +1,7 @@
 import "./globals.css";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import { AmplifyProvider } from "@/contexts/identity_access/components/AmplifyProvider";
+import { AmplifyProvider } from "@/shared/components/auth/AmplifyProvider";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 

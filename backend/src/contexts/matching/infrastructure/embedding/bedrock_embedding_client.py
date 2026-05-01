@@ -16,7 +16,8 @@ from shared.infrastructure.aws.secrets import get_secret
 
 _TEXT_MODEL = os.environ.get("BEDROCK_TEXT_MODEL", "amazon.titan-embed-text-v2:0")
 _GROQ_SECRET_NAME = os.environ.get("GROQ_SECRET_NAME", "tracefind/groq-api-key")
-_GROQ_MODEL = "meta-llama/llama-4-scout-17b-16e-instruct"
+_GROQ_MODEL = os.environ.get("GROQ_MODEL", "meta-llama/llama-4-scout-17b-16e-instruct")
+_GROQ_TIMEOUT_SECONDS = float(os.environ.get("GROQ_TIMEOUT_SECONDS", "5"))
 
 
 class BedrockEmbeddingClient(EmbeddingGenerator):
@@ -42,9 +43,7 @@ class BedrockEmbeddingClient(EmbeddingGenerator):
     def _invoke_groq_vision(self, image: ImagePayload) -> str:
         api_key = get_secret(_GROQ_SECRET_NAME)
         b64_image = base64.b64encode(image.bytes_).decode("utf-8")
-        # Ensure correct mime type (assuming jpeg or png from frontend)
-        # The frontend resizes to image/jpeg, so we can hardcode for this prototype
-        data_uri = f"data:image/jpeg;base64,{b64_image}"
+        data_uri = f"data:{image.mime};base64,{b64_image}"
 
         payload = {
             "model": _GROQ_MODEL,
@@ -81,14 +80,23 @@ class BedrockEmbeddingClient(EmbeddingGenerator):
         )
 
         try:
-            with urllib.request.urlopen(req) as resp:
+            with urllib.request.urlopen(req, timeout=_GROQ_TIMEOUT_SECONDS) as resp:
                 body = json.loads(resp.read().decode("utf-8"))
-                return body["choices"][0]["message"]["content"]
         except urllib.error.HTTPError as e:
             error_body = e.read().decode("utf-8")
             raise UpstreamError(f"Groq API error: {e.code} - {error_body}") from e
         except Exception as exc:
             raise UpstreamError(f"Groq API failed: {exc}") from exc
+
+        try:
+            content = body["choices"][0]["message"]["content"]
+        except (KeyError, IndexError, TypeError) as exc:
+            raise UpstreamError(
+                f"Groq returned unexpected response shape: {body}"
+            ) from exc
+        if not isinstance(content, str) or not content.strip():
+            raise UpstreamError(f"Groq returned empty caption: {body}")
+        return content
 
     def _invoke_text(self, text: str) -> list[float]:
         body = json.dumps({"inputText": text})

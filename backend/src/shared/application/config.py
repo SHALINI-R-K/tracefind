@@ -41,7 +41,7 @@ def embedding_model_version() -> str:
 
 
 def ses_from_email() -> str:
-    return env("SES_FROM_EMAIL", "no-reply@tracefind.local")
+    return env("SES_FROM_EMAIL")
 
 
 def item_ttl_seconds() -> int:

@@ -45,7 +45,9 @@ def list_reports_handler(event: dict[str, Any]) -> dict[str, Any]:
     qs = event.get("queryStringParameters") or {}
     status = qs.get("status")
     limit = min(int(qs.get("limit", "50")), 200)
-    return response(200, {"reports": _list_reports.execute(status=status, limit=limit)})
+    cursor = qs.get("cursor")
+    reports, next_cursor = _list_reports.execute(status=status, limit=limit, cursor=cursor)
+    return response(200, {"reports": reports, "next_cursor": next_cursor})
 
 
 @handler

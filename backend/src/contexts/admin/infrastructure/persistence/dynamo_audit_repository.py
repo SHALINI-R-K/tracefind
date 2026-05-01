@@ -50,21 +50,26 @@ class DynamoAuditRepository(AuditRepository):
         limit: int,
         cursor: str | None,
     ) -> tuple[list[AuditEntry], str | None]:
-        kwargs: dict[str, Any] = {"Limit": limit, "ScanIndexForward": False}
+        kwargs: dict[str, Any] = {"Limit": limit}
+        start_key = (
+            json.loads(base64.urlsafe_b64decode(cursor.encode()).decode())
+            if cursor
+            else None
+        )
         if actor_user_id:
             kwargs["IndexName"] = "GSI1"
             kwargs["KeyConditionExpression"] = Key("actor_user_id").eq(actor_user_id)
+            kwargs["ScanIndexForward"] = False
         elif target_id:
             kwargs["IndexName"] = "GSI2"
             kwargs["KeyConditionExpression"] = Key("target_id").eq(target_id)
+            kwargs["ScanIndexForward"] = False
+        if start_key:
+            kwargs["ExclusiveStartKey"] = start_key
+        if actor_user_id or target_id:
+            resp = self._table.query(**kwargs)
         else:
-            resp = self._table.scan(Limit=limit)
-            return [self._from_record(r) for r in resp.get("Items", [])], None
-        if cursor:
-            kwargs["ExclusiveStartKey"] = json.loads(
-                base64.urlsafe_b64decode(cursor.encode()).decode()
-            )
-        resp = self._table.query(**kwargs)
+            resp = self._table.scan(**kwargs)
         items = [self._from_record(r) for r in resp.get("Items", [])]
         last = resp.get("LastEvaluatedKey")
         next_cursor = (

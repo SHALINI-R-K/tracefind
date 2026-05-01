@@ -1,15 +1,15 @@
-from src.contexts.matching.domain.services.matching_service import MatchingService
-from src.contexts.matching.domain.value_objects.embedding import Embedding
-from src.contexts.matching.domain.value_objects.similarity_score import (
+from contexts.matching.domain.services.matching_service import MatchingService
+from contexts.matching.domain.value_objects.embedding import Embedding
+from contexts.matching.domain.value_objects.similarity_score import (
     MatchThreshold,
     SimilarityScore,
 )
-from src.contexts.reporting.domain.entities.item_report import ItemReport
-from src.contexts.reporting.domain.value_objects.description import Description
-from src.contexts.reporting.domain.value_objects.report_status import ReportStatus
-from src.contexts.reporting.domain.value_objects.report_type import ReportType
-from src.shared.domain.value_objects.identifier import ItemId, UserId
-from src.shared.domain.value_objects.timestamp import Timestamp
+from contexts.reporting.domain.entities.item_report import ItemReport
+from contexts.reporting.domain.value_objects.description import Description
+from contexts.reporting.domain.value_objects.report_status import ReportStatus
+from contexts.reporting.domain.value_objects.report_type import ReportType
+from shared.domain.value_objects.identifier import ItemId, UserId
+from shared.domain.value_objects.timestamp import Timestamp
 
 
 def _report(t: ReportType, vec: list[float]) -> ItemReport:

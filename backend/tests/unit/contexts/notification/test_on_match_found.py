@@ -3,10 +3,11 @@ from unittest.mock import MagicMock, patch
 from decimal import Decimal
 from contexts.notification.interfaces.events.on_match_found import lambda_handler
 
-@patch("contexts.notification.interfaces.events.on_match_found._command")
+@patch("contexts.notification.interfaces.events.on_match_found.SendMatchNotificationCommand")
 @patch("contexts.notification.interfaces.events.on_match_found._get_reports")
 @patch("contexts.notification.interfaces.events.on_match_found.CognitoUserDirectory")
-def test_on_match_found_success(mock_user_dir, mock_get_reports, mock_command):
+def test_on_match_found_success(mock_user_dir, mock_get_reports, mock_command_cls):
+    mock_command = mock_command_cls.return_value
     # Mock reports
     lost_report = MagicMock()
     lost_report.user_id = "user-lost"

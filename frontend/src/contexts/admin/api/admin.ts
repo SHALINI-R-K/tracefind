@@ -20,9 +20,15 @@ export interface AuditEntry {
   created_at: string;
 }
 
-export async function listReports(status?: string): Promise<{ reports: AdminReport[] }> {
-  const qs = status ? `?status=${encodeURIComponent(status)}` : "";
-  return apiFetch(`/admin/reports${qs}`);
+export async function listReports(
+  opts: { status?: string; cursor?: string; limit?: number } = {}
+): Promise<{ reports: AdminReport[]; next_cursor: string | null }> {
+  const params = new URLSearchParams();
+  if (opts.status) params.set("status", opts.status);
+  if (opts.cursor) params.set("cursor", opts.cursor);
+  if (opts.limit) params.set("limit", String(opts.limit));
+  const qs = params.toString();
+  return apiFetch(`/admin/reports${qs ? `?${qs}` : ""}`);
 }
 
 export async function archiveReport(id: string, reason: string): Promise<unknown> {

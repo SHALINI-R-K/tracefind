@@ -13,6 +13,7 @@ node_modules/
 out/
 .env.local
 .env.*.local
+*.tsbuildinfo
 
 # CDK
 cdk.out/

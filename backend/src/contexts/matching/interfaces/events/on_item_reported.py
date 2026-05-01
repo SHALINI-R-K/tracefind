@@ -29,6 +29,7 @@ _command = RunMatchingCommand(
 
 def lambda_handler(event: dict[str, Any], _context: Any) -> dict[str, Any]:
     processed = 0
+    failures: list[dict[str, str]] = []
     for record in event.get("Records", []):
         if record.get("eventName") != "INSERT":
             continue
@@ -49,4 +50,13 @@ def lambda_handler(event: dict[str, Any], _context: Any) -> dict[str, Any]:
             processed += 1
         except Exception as exc:  # noqa: BLE001
             log(_logger, logging.ERROR, "matching_failed", item_id=item_id, error=str(exc))
+            sequence_number = (record.get("dynamodb") or {}).get("SequenceNumber")
+            if sequence_number:
+                failures.append({"itemIdentifier": sequence_number})
+
+    # Partial-batch response: failed records are retried (and ultimately go to DLQ
+    # if the event source mapping is wired with onFailure → SQS). Successful
+    # records are NOT retried, so a single bad item doesn't block the batch.
+    if failures:
+        return {"batchItemFailures": failures, "processed": processed}
     return {"processed": processed}

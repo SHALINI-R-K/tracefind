@@ -1,20 +1,20 @@
 import base64
 
-from src.contexts.matching.infrastructure.embedding.bedrock_embedding_client import (
+from contexts.matching.infrastructure.embedding.bedrock_embedding_client import (
     FakeEmbeddingClient,
 )
-from src.contexts.reporting.application.commands.create_item_report import (
+from contexts.reporting.application.commands.create_item_report import (
     CreateItemReportCommand,
 )
-from src.contexts.reporting.application.dtos.report_dto import CreateItemReportInput
-from src.contexts.reporting.domain.entities.item_report import ItemReport
-from src.contexts.reporting.domain.repositories.item_report_repository import (
+from contexts.reporting.application.dtos.report_dto import CreateItemReportInput
+from contexts.reporting.domain.entities.item_report import ItemReport
+from contexts.reporting.domain.repositories.item_report_repository import (
     ItemReportRepository,
 )
-from src.contexts.reporting.domain.value_objects.report_status import ReportStatus
-from src.contexts.reporting.domain.value_objects.report_type import ReportType
-from src.shared.domain.value_objects.identifier import ItemId, UserId
-from src.shared.infrastructure.event_bus.dynamodb_stream_event_bus import RecordingEventBus
+from contexts.reporting.domain.value_objects.report_status import ReportStatus
+from contexts.reporting.domain.value_objects.report_type import ReportType
+from shared.domain.value_objects.identifier import ItemId, UserId
+from shared.infrastructure.event_bus.dynamodb_stream_event_bus import RecordingEventBus
 
 
 class InMemoryItemRepo(ItemReportRepository):
